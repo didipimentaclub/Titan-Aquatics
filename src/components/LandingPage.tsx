@@ -1,4 +1,3 @@
-
 import React, { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { Globe, Zap, Menu, X, Calendar, ChevronLeft, ChevronRight, Droplets, Activity, Fish, ShieldCheck, Plane, BookOpen, ChevronDown, CheckCircle, Info } from 'lucide-react';
@@ -240,7 +239,7 @@ const LandingPage: React.FC = () => {
         </div>
 
         <button 
-          className="md:hidden text-white z-50 relative w-10 h-10 flex items-center justify-center"
+          className="md:hidden text-white z-50 relative w-10 h-10 flex items-center justify-center bg-transparent border-none"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
            {mobileMenuOpen ? <X /> : <Menu />}
@@ -265,25 +264,25 @@ const LandingPage: React.FC = () => {
               <button
                 key={item.id}
                 onClick={() => scrollToSection(item.id)}
-                className="text-4xl font-heading font-bold text-white hover:text-[#a8fbd3] transition-colors uppercase bg-transparent border-none"
+                className="text-3xl font-heading font-bold text-white hover:text-[#a8fbd3] transition-colors uppercase bg-transparent border-none"
               >
                 {item.label}
               </button>
             ))}
             
-            <div className="flex flex-col gap-4 mt-4 w-full px-12">
+            <div className="flex flex-col gap-4 mt-8 w-full px-8 max-w-sm">
               <RippleButton 
                 onClick={() => openAuth('login')}
-                className="w-full py-4 text-sm font-bold tracking-widest uppercase text-white border border-white/20"
+                className="w-full py-4 text-base font-bold tracking-widest uppercase text-white border border-white/20 hover:bg-white/10"
               >
                 Entrar
               </RippleButton>
               <RippleButton 
                 onClick={() => openAuth('signup')}
-                className="w-full py-4 text-sm font-bold tracking-widest uppercase bg-white text-black"
-                rippleColor="rgba(0,0,0,0.1)"
+                className="w-full py-4 text-base font-bold tracking-widest uppercase bg-[#4fb7b3] text-black shadow-lg hover:bg-white"
+                rippleColor="rgba(255,255,255,0.4)"
               >
-                Criar Conta
+                Começar Agora
               </RippleButton>
             </div>
           </motion.div>
@@ -577,18 +576,20 @@ const LandingPage: React.FC = () => {
                         return (
                           <li key={idx} className="flex items-start gap-3 relative group/feature">
                             <CheckCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${i === 1 ? 'text-[#a8fbd3]' : 'text-gray-400'}`} /> 
+                            
+                            {/* Feature Text */}
                             <div 
-                              className={`relative flex-1 ${!isProfessional ? 'cursor-help' : 'cursor-pointer'}`}
+                              className={`relative flex-1 ${!isProfessional ? 'cursor-help' : ''}`}
                               onMouseEnter={() => !isProfessional && setActivePlanFeature(featureKey)}
                               onMouseLeave={() => !isProfessional && setActivePlanFeature(null)}
-                              onClick={() => isProfessional && setActivePlanFeature(isActive ? null : featureKey)}
                             >
-                              <span className="border-b border-white/10 group-hover/feature:border-white/50 transition-colors">
+                              <span className={`border-b border-transparent ${!isProfessional ? 'border-white/10 group-hover/feature:border-white/50 transition-colors' : ''}`}>
                                 {feature.text}
                               </span>
 
+                              {/* Tooltip for Hobby (Hover) */}
                               <AnimatePresence>
-                                {isActive && (
+                                {!isProfessional && isActive && (
                                   <motion.div
                                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                     animate={{ opacity: 1, y: -5, scale: 1 }}
@@ -604,16 +605,35 @@ const LandingPage: React.FC = () => {
                               </AnimatePresence>
                             </div>
                             
+                            {/* Info Icon & Tooltip for Professional (Click) */}
                             {isProfessional && (
-                              <button 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setActivePlanFeature(isActive ? null : featureKey);
-                                }}
-                                className={`ml-auto transition-colors focus:outline-none ${isActive ? 'text-[#4fb7b3]' : 'text-white/30 hover:text-[#4fb7b3]'}`}
-                              >
-                                <Info className="w-4 h-4" />
-                              </button>
+                              <div className="relative ml-auto">
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setActivePlanFeature(isActive ? null : featureKey);
+                                  }}
+                                  className={`transition-colors focus:outline-none ${isActive ? 'text-[#4fb7b3]' : 'text-white/30 hover:text-[#4fb7b3]'}`}
+                                >
+                                  <Info className="w-4 h-4" />
+                                </button>
+
+                                <AnimatePresence>
+                                  {isActive && (
+                                    <motion.div
+                                      initial={{ opacity: 0, y: 10, scale: 0.95, x: 20 }}
+                                      animate={{ opacity: 1, y: -5, scale: 1, x: 0 }}
+                                      exit={{ opacity: 0, scale: 0.95, x: 20 }}
+                                      className="absolute bottom-full right-0 mb-2 w-64 p-3 bg-[#05051a] border border-[#4fb7b3]/30 rounded-xl backdrop-blur-xl z-50 shadow-2xl"
+                                    >
+                                      <p className="text-xs text-gray-300 leading-relaxed text-left">
+                                        {feature.detail}
+                                      </p>
+                                      <div className="absolute top-full right-1.5 -mt-1 border-4 border-transparent border-t-[#4fb7b3]/30" />
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
+                              </div>
                             )}
                             
                             {!isProfessional && (
