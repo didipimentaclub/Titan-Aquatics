@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Mail, Lock, Chrome, ArrowRight } from 'lucide-react';
+import { X, Mail, Lock, Chrome, ArrowRight, AlertCircle } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../context/AuthContext';
 
@@ -9,6 +9,16 @@ interface AuthModalProps {
   onClose: () => void;
   initialMode?: 'login' | 'signup';
 }
+
+const getFriendlyErrorMessage = (errorMsg: string) => {
+  const msg = errorMsg.toLowerCase();
+  if (msg.includes('invalid login credentials')) return 'E-mail ou senha incorretos.';
+  if (msg.includes('user already registered')) return 'Este e-mail já está cadastrado.';
+  if (msg.includes('password should be at least')) return 'A senha deve ter no mínimo 6 caracteres.';
+  if (msg.includes('email not confirmed')) return 'Por favor, confirme seu e-mail antes de entrar.';
+  if (msg.includes('too many requests') || msg.includes('rate limit')) return 'Muitas tentativas. Aguarde um pouco.';
+  return 'Ocorreu um erro ao processar. Tente novamente.';
+};
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'signup' }) => {
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
@@ -41,7 +51,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 's
         onClose();
       }
     } catch (err: any) {
-      setError(err.message);
+      setError(getFriendlyErrorMessage(err.message || ''));
     } finally {
       setLoading(false);
     }
@@ -152,7 +162,16 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 's
                   </div>
                 </div>
 
-                {error && <p className="text-red-400 text-xs">{error}</p>}
+                {error && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-start gap-2 bg-red-500/10 border border-red-500/20 p-3 rounded text-red-200 text-xs"
+                  >
+                    <AlertCircle size={14} className="mt-0.5 shrink-0 text-red-400" />
+                    <span>{error}</span>
+                  </motion.div>
+                )}
 
                 <button
                   type="submit"
@@ -168,7 +187,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 's
                 <p className="text-xs text-gray-400">
                   {mode === 'login' ? "Não tem uma conta? " : "Já tem uma conta? "}
                   <button
-                    onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
+                    onClick={() => {
+                      setMode(mode === 'login' ? 'signup' : 'login');
+                      setError(null);
+                    }}
                     className="text-white underline underline-offset-4 hover:text-[#4fb7b3] transition-colors"
                   >
                     {mode === 'login' ? 'Cadastre-se' : 'Faça login'}

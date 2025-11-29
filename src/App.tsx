@@ -1,35 +1,36 @@
-
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
-*/
-
+// src/App.tsx
 import React from 'react';
-import { useAuth } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import LandingPage from './components/LandingPage';
 import Dashboard from './components/Dashboard';
 
-const App: React.FC = () => {
+function AppContent() {
   const { user, loading } = useAuth();
 
+  // Enquanto o Supabase ainda está carregando a sessão
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#31326f] text-white">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-[#4fb7b3] border-t-transparent rounded-full animate-spin" />
-          <span className="font-mono text-xs tracking-[0.3em] uppercase opacity-70 animate-pulse">
-            Loading TitanAquatics...
-          </span>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-[#050816] text-white">
+        <p className="text-sm tracking-wide opacity-70">
+          Carregando seu painel inteligente do TitanAquatics...
+        </p>
       </div>
     );
   }
 
+  // Se tem usuário logado, mostra o Dashboard
   if (user) {
     return <Dashboard />;
   }
 
+  // Se não tem usuário, mostra a landing
   return <LandingPage />;
-};
+}
 
-export default App;
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}

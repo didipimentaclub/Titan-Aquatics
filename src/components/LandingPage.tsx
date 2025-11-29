@@ -27,7 +27,8 @@ const FEATURES: Feature[] = [
     name: 'Dashboard Inteligente', 
     category: 'Monitoramento', 
     tag: 'LIVE', 
-    image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800',
+    // Optimized: w=640, q=75
+    image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=75&w=640',
     description: 'Uma visão global da saúde do seu tanque. Status em tempo real do ciclo do nitrogênio, estabilidade da temperatura e próximas tarefas.',
     icon: Activity
   },
@@ -36,7 +37,8 @@ const FEATURES: Feature[] = [
     name: 'Validador de Fauna', 
     category: 'Análise IA', 
     tag: 'IA', 
-    image: 'https://images.unsplash.com/photo-1571752726703-4e70928524a9?auto=format&fit=crop&q=80&w=800',
+    // Replaced with underwater fish school image & Optimized
+    image: 'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?auto=format&fit=crop&q=75&w=640',
     description: 'Evite agressão e estresse. Nossa IA analisa a compatibilidade das espécies, tamanho dos cardumes e capacidade de carga biológica por litro.',
     icon: Fish
   },
@@ -45,7 +47,8 @@ const FEATURES: Feature[] = [
     name: 'Laboratório de Água', 
     category: 'Química', 
     tag: 'LAB', 
-    image: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&q=80&w=800',
+    // Optimized: w=640, q=75
+    image: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&q=75&w=640',
     description: 'Registre pH, amônia, nitrito e nitrato. Gráficos visuais rastreiam a estabilidade ao longo do tempo e alertam sobre picos perigosos.',
     icon: Droplets
   },
@@ -54,7 +57,8 @@ const FEATURES: Feature[] = [
     name: 'Manutenção 2.0', 
     category: 'Agenda', 
     tag: 'TASK', 
-    image: 'https://images.unsplash.com/photo-1584621645331-c775a6669913?auto=format&fit=crop&q=80&w=800',
+    // Optimized: w=640, q=75
+    image: 'https://images.unsplash.com/photo-1584621645331-c775a6669913?auto=format&fit=crop&q=75&w=640',
     description: 'Nunca perca uma TPA novamente. Agendamento inteligente para limpeza de filtro, dosagem e alimentação com rastreamento de sequência.',
     icon: Calendar
   },
@@ -63,7 +67,8 @@ const FEATURES: Feature[] = [
     name: 'Modo Viagem', 
     category: 'Automação', 
     tag: 'AUTO', 
-    image: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&q=80&w=800',
+    // Optimized: w=640, q=75
+    image: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&q=75&w=640',
     description: 'Vai sair? Gere um guia PDF simplificado para quem vai cuidar do aquário, com dosagens exatas e contatos de emergência.',
     icon: Plane
   },
@@ -72,7 +77,8 @@ const FEATURES: Feature[] = [
     name: 'Enciclopédia Titan', 
     category: 'Banco de Dados', 
     tag: 'DATA', 
-    image: 'https://images.unsplash.com/photo-1535591273668-578e31182c4f?auto=format&fit=crop&q=80&w=800',
+    // Optimized: w=640, q=75
+    image: 'https://images.unsplash.com/photo-1535591273668-578e31182c4f?auto=format&fit=crop&q=75&w=640',
     description: 'Banco de dados abrangente de peixes, plantas e corais. Filtre por dificuldade, temperamento e requisitos de água.',
     icon: BookOpen
   },
@@ -427,8 +433,9 @@ const LandingPage: React.FC = () => {
             <div className="lg:col-span-7 relative h-[400px] md:h-[700px] w-full order-1 lg:order-2">
               <div className="absolute inset-0 bg-gradient-to-br from-[#637ab9] to-[#4fb7b3] rounded-3xl rotate-3 opacity-30 blur-xl" />
               <div className="relative h-full w-full rounded-3xl overflow-hidden border border-white/10 group shadow-2xl">
+                {/* Optimized: w=1000, q=75 */}
                 <img 
-                  src="https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?auto=format&fit=crop&q=80&w=1200" 
+                  src="https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?auto=format&fit=crop&q=75&w=1000" 
                   alt="Aquarium" 
                   className="h-full w-full object-cover transition-transform duration-[1.5s] group-hover:scale-110 will-change-transform" 
                 />
@@ -800,13 +807,14 @@ const LandingPage: React.FC = () => {
 
                   {selectedFeature.id === '4' ? (
                     <div className="flex flex-col gap-3">
-                        <button 
+                        <RippleButton 
                             onClick={handleSimulateTask}
                             disabled={isTaskAnimating}
-                            className="self-start border-b border-[#4fb7b3] text-[#4fb7b3] uppercase tracking-widest pb-1 hover:text-white hover:border-white transition-colors flex items-center gap-2"
+                            className="self-start border-b border-[#4fb7b3] text-[#4fb7b3] uppercase tracking-widest pb-1 hover:text-white hover:border-white transition-colors flex items-center gap-2 bg-transparent"
+                            rippleColor="rgba(79, 183, 179, 0.2)"
                         >
                         {isTaskAnimating ? 'Adicionando...' : 'Simular Agendamento TPA'}
-                        </button>
+                        </RippleButton>
                         <AnimatePresence>
                             {isTaskAnimating && (
                                 <motion.div
@@ -824,7 +832,7 @@ const LandingPage: React.FC = () => {
                   ) : (
                     <RippleButton 
                        onClick={() => openAuth('signup')}
-                       className="self-start border-b border-[#4fb7b3] text-[#4fb7b3] uppercase tracking-widest pb-1 hover:text-white hover:border-white transition-colors"
+                       className="self-start border-b border-[#4fb7b3] text-[#4fb7b3] uppercase tracking-widest pb-1 hover:text-white hover:border-white transition-colors bg-transparent"
                        rippleColor="rgba(255,255,255,0.2)"
                     >
                       Testar Recurso
