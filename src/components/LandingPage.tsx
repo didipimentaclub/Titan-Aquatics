@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { Globe, Zap, Menu, X, Calendar, ChevronLeft, ChevronRight, Droplets, Activity, Fish, ShieldCheck, Plane, BookOpen, ChevronDown, CheckCircle, Info } from 'lucide-react';
+import { Globe, Zap, Menu, X, Calendar, ChevronLeft, ChevronRight, Droplets, Activity, Fish, ShieldCheck, Plane, BookOpen, ChevronDown, CheckCircle, Info, Twitter, Instagram, Linkedin, Youtube } from 'lucide-react';
 import FluidBackground from './FluidBackground';
 import GradientText from './GlitchText';
 import CustomCursor from './CustomCursor';
@@ -579,17 +579,17 @@ const LandingPage: React.FC = () => {
                             
                             {/* Feature Text */}
                             <div 
-                              className={`relative flex-1 ${!isProfessional ? 'cursor-help' : ''}`}
-                              onMouseEnter={() => !isProfessional && setActivePlanFeature(featureKey)}
-                              onMouseLeave={() => !isProfessional && setActivePlanFeature(null)}
+                              className="relative flex-1 cursor-help"
+                              onMouseEnter={() => setActivePlanFeature(featureKey)}
+                              onMouseLeave={() => setActivePlanFeature(null)}
                             >
-                              <span className={`border-b border-transparent ${!isProfessional ? 'border-white/10 group-hover/feature:border-white/50 transition-colors' : ''}`}>
+                              <span className="border-b border-white/10 group-hover/feature:border-white/50 transition-colors">
                                 {feature.text}
                               </span>
 
-                              {/* Tooltip for Hobby (Hover) */}
+                              {/* Unified Tooltip */}
                               <AnimatePresence>
-                                {!isProfessional && isActive && (
+                                {isActive && (
                                   <motion.div
                                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                     animate={{ opacity: 1, y: -5, scale: 1 }}
@@ -605,40 +605,7 @@ const LandingPage: React.FC = () => {
                               </AnimatePresence>
                             </div>
                             
-                            {/* Info Icon & Tooltip for Professional (Click) */}
-                            {isProfessional && (
-                              <div className="relative ml-auto">
-                                <button 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setActivePlanFeature(isActive ? null : featureKey);
-                                  }}
-                                  className={`transition-colors focus:outline-none ${isActive ? 'text-[#4fb7b3]' : 'text-white/30 hover:text-[#4fb7b3]'}`}
-                                >
-                                  <Info className="w-4 h-4" />
-                                </button>
-
-                                <AnimatePresence>
-                                  {isActive && (
-                                    <motion.div
-                                      initial={{ opacity: 0, y: 10, scale: 0.95, x: 20 }}
-                                      animate={{ opacity: 1, y: -5, scale: 1, x: 0 }}
-                                      exit={{ opacity: 0, scale: 0.95, x: 20 }}
-                                      className="absolute bottom-full right-0 mb-2 w-64 p-3 bg-[#05051a] border border-[#4fb7b3]/30 rounded-xl backdrop-blur-xl z-50 shadow-2xl"
-                                    >
-                                      <p className="text-xs text-gray-300 leading-relaxed text-left">
-                                        {feature.detail}
-                                      </p>
-                                      <div className="absolute top-full right-1.5 -mt-1 border-4 border-transparent border-t-[#4fb7b3]/30" />
-                                    </motion.div>
-                                  )}
-                                </AnimatePresence>
-                              </div>
-                            )}
-                            
-                            {!isProfessional && (
-                               <Info className="w-3 h-3 text-white/20 mt-1 opacity-0 group-hover/feature:opacity-100 transition-opacity ml-auto" />
-                            )}
+                            <Info className="w-3 h-3 text-white/20 mt-1 opacity-0 group-hover/feature:opacity-100 transition-opacity ml-auto" />
                           </li>
                         );
                       })}
@@ -695,23 +662,7 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* FINAL CTA */}
-      <section className="relative z-10 py-24 px-4 text-center border-t border-white/10">
-         <div className="max-w-3xl mx-auto">
-           <h2 className="text-4xl md:text-6xl font-heading font-bold mb-6">
-             Pare de Adivinhar. <br/> Comece a <span className="text-[#4fb7b3]">Saber.</span>
-           </h2>
-           <p className="text-xl text-gray-400 mb-10">Junte-se a milhares de aquaristas mantendo seus tanques cristalinos.</p>
-           <RippleButton 
-             onClick={() => openAuth('signup')}
-             className="px-12 py-5 bg-white text-black font-bold text-lg uppercase tracking-widest hover:bg-[#a8fbd3] transition-colors shadow-[0_0_20px_rgba(255,255,255,0.3)]"
-             data-hover="true"
-             rippleColor="rgba(0,0,0,0.1)"
-           >
-             Criar Conta
-           </RippleButton>
-         </div>
-      </section>
+      {/* CTA Final Removed as requested */}
 
       <footer className="relative z-10 border-t border-white/10 py-12 md:py-16 bg-black/80 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
@@ -723,11 +674,17 @@ const LandingPage: React.FC = () => {
           </div>
           
           <div className="flex gap-6 md:gap-8 flex-wrap">
-            <a href="#" className="text-gray-400 hover:text-white font-bold uppercase text-xs tracking-widest transition-colors cursor-pointer" data-hover="true">
-              Twitter
+            <a href="#" className="text-gray-400 hover:text-[#4fb7b3] transition-colors cursor-pointer" data-hover="true" aria-label="Twitter">
+              <Twitter className="w-5 h-5" />
             </a>
-            <a href="#" className="text-gray-400 hover:text-white font-bold uppercase text-xs tracking-widest transition-colors cursor-pointer" data-hover="true">
-              Instagram
+            <a href="#" className="text-gray-400 hover:text-[#c13584] transition-colors cursor-pointer" data-hover="true" aria-label="Instagram">
+              <Instagram className="w-5 h-5" />
+            </a>
+            <a href="#" className="text-gray-400 hover:text-[#0077b5] transition-colors cursor-pointer" data-hover="true" aria-label="LinkedIn">
+              <Linkedin className="w-5 h-5" />
+            </a>
+            <a href="#" className="text-gray-400 hover:text-[#ff0000] transition-colors cursor-pointer" data-hover="true" aria-label="YouTube">
+              <Youtube className="w-5 h-5" />
             </a>
           </div>
         </div>
