@@ -32,6 +32,7 @@ export interface Aquarium {
   user_id: string;
   name: string;
   volume: number;
+  sump_volume?: number; // Novo campo
   type: string;
   setup_date: string;
   fauna: string;
@@ -48,4 +49,5 @@ export interface AquariumEvent {
   type: 'Feira' | 'Encontro' | 'Campeonato' | 'Workshop';
   image?: string;
   link?: string;
+  video_url?: string;
 }

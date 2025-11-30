@@ -82,16 +82,16 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 's
             initial={{ scale: 0.9, y: 20 }}
             animate={loading 
               ? { 
-                  scale: 1, 
+                  scale: [1, 1.01, 1], // Efeito sutil de respiração
                   y: 0,
                   boxShadow: [
                     "0 25px 50px -12px rgba(79, 183, 179, 0.2)", 
-                    "0 0 40px rgba(79, 183, 179, 0.5)", 
+                    "0 0 30px rgba(79, 183, 179, 0.6)", // Brilho mais intenso no pico
                     "0 25px 50px -12px rgba(79, 183, 179, 0.2)"
                   ],
                   borderColor: [
                     "rgba(255, 255, 255, 0.1)",
-                    "rgba(79, 183, 179, 0.6)",
+                    "rgba(79, 183, 179, 0.5)", // Pulso na borda com a cor da marca
                     "rgba(255, 255, 255, 0.1)"
                   ]
                 } 

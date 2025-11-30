@@ -579,11 +579,12 @@ const LandingPage: React.FC = () => {
                             
                             {/* Feature Text */}
                             <div 
-                              className="relative flex-1 cursor-help"
-                              onMouseEnter={() => setActivePlanFeature(featureKey)}
-                              onMouseLeave={() => setActivePlanFeature(null)}
+                              className={`relative flex-1 ${isProfessional ? 'cursor-pointer' : 'cursor-help'}`}
+                              onMouseEnter={() => !isProfessional && setActivePlanFeature(featureKey)}
+                              onMouseLeave={() => !isProfessional && setActivePlanFeature(null)}
+                              onClick={() => isProfessional && setActivePlanFeature(isActive ? null : featureKey)}
                             >
-                              <span className="border-b border-white/10 group-hover/feature:border-white/50 transition-colors">
+                              <span className={`border-b transition-colors ${isActive && isProfessional ? 'border-[#4fb7b3] text-[#4fb7b3]' : 'border-white/10 group-hover/feature:border-white/50'}`}>
                                 {feature.text}
                               </span>
 
@@ -605,7 +606,7 @@ const LandingPage: React.FC = () => {
                               </AnimatePresence>
                             </div>
                             
-                            <Info className="w-3 h-3 text-white/20 mt-1 opacity-0 group-hover/feature:opacity-100 transition-opacity ml-auto" />
+                            <Info className={`w-3 h-3 text-white/20 mt-1 transition-opacity ml-auto ${isProfessional ? 'opacity-50 group-hover/feature:opacity-100' : 'opacity-0 group-hover/feature:opacity-100'}`} />
                           </li>
                         );
                       })}
