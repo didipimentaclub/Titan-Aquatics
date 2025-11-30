@@ -6,7 +6,6 @@ import './index.css';
 
 // App novo fica dentro de src/
 import App from './src/App';
-import { AuthProvider } from './src/context/AuthContext';
 
 const rootElement = document.getElementById('root');
 
@@ -18,8 +17,6 @@ const root = ReactDOM.createRoot(rootElement);
 
 root.render(
   <React.StrictMode>
-    <AuthProvider>
-      <App />
-    </AuthProvider>
+    <App />
   </React.StrictMode>
 );
