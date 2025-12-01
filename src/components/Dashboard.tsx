@@ -68,6 +68,14 @@ interface TravelPlan {
   notes: string;
 }
 
+interface UserProfile {
+  id: string;
+  email?: string;
+  full_name?: string;
+  subscription_tier?: 'hobby' | 'pro' | 'master';
+  created_at: string;
+}
+
 // --- Componente AdminPanel ---
 interface AdminPanelProps {
   isMaster: boolean;
@@ -91,6 +99,46 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isMaster, events, onAddEvent, o
     video_url: ''
   });
   const [loading, setLoading] = useState(false);
+  
+  // Estados para métricas reais
+  const [stats, setStats] = useState({ clients: 0, aquariums: 0, revenue: 0 });
+  const [clients, setClients] = useState<UserProfile[]>([]);
+  const [loadingStats, setLoadingStats] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === 'overview') fetchStats();
+    if (activeTab === 'clients') fetchClients();
+  }, [activeTab]);
+
+  const fetchStats = async () => {
+    setLoadingStats(true);
+    try {
+      // Conta perfis (clientes)
+      const { count: clientsCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
+      // Conta aquários
+      const { count: tanksCount } = await supabase.from('aquariums').select('*', { count: 'exact', head: true });
+      
+      // Cálculo Estimado de Receita (Simulação baseada no count)
+      // Ex: 10% Pro (R$49) + 90% Hobby (R$29) - Ajuste conforme realidade futura
+      const estimatedRevenue = (clientsCount || 0) * 29.90; 
+
+      setStats({
+        clients: clientsCount || 0,
+        aquariums: tanksCount || 0,
+        revenue: estimatedRevenue
+      });
+    } catch (e) {
+      console.error("Erro ao carregar stats", e);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
+  const fetchClients = async () => {
+    // Tenta buscar dados da tabela profiles
+    const { data } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
+    if (data) setClients(data as any);
+  };
 
   const handleOpenForm = (event?: AquariumEvent) => {
     if (event) {
@@ -154,20 +202,20 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isMaster, events, onAddEvent, o
             <div className="rounded-2xl border border-white/5 bg-[#1a1b3b]/60 p-6 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-4 opacity-5"><Users size={64} /></div>
                 <p className="text-xs text-slate-400 uppercase tracking-widest font-bold">Clientes Ativos</p>
-                <p className="mt-2 text-3xl font-bold text-white">142</p>
-                <div className="mt-4 flex items-center gap-2 text-emerald-400 text-xs font-bold"><TrendingUp size={14} /> +12% este mês</div>
+                <p className="mt-2 text-3xl font-bold text-white">{loadingStats ? '...' : stats.clients}</p>
+                <div className="mt-4 flex items-center gap-2 text-emerald-400 text-xs font-bold"><TrendingUp size={14} /> Base Atual (Profiles)</div>
             </div>
             <div className="rounded-2xl border border-white/5 bg-[#1a1b3b]/60 p-6 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-4 opacity-5"><Fish size={64} /></div>
                 <p className="text-xs text-slate-400 uppercase tracking-widest font-bold">Aquários Monitorados</p>
-                <p className="mt-2 text-3xl font-bold text-white">305</p>
-                <div className="mt-4 flex items-center gap-2 text-emerald-400 text-xs font-bold"><Activity size={14} /> Alta atividade</div>
+                <p className="mt-2 text-3xl font-bold text-white">{loadingStats ? '...' : stats.aquariums}</p>
+                <div className="mt-4 flex items-center gap-2 text-emerald-400 text-xs font-bold"><Activity size={14} /> Total Cadastrado</div>
             </div>
             <div className="rounded-2xl border border-white/5 bg-[#1a1b3b]/60 p-6 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-4 opacity-5"><DollarSign size={64} /></div>
                 <p className="text-xs text-slate-400 uppercase tracking-widest font-bold">Receita Estimada</p>
-                <p className="mt-2 text-3xl font-bold text-[#4fb7b3]">R$ 14.2k</p>
-                <div className="mt-4 text-slate-500 text-xs">Atualizado hoje</div>
+                <p className="mt-2 text-3xl font-bold text-[#4fb7b3]">R$ {loadingStats ? '...' : stats.revenue.toFixed(2)}</p>
+                <div className="mt-4 text-slate-500 text-xs">Baseado em assinaturas</div>
             </div>
           </div>
       )}
@@ -175,27 +223,31 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isMaster, events, onAddEvent, o
       {activeTab === 'clients' && (
           <div className="rounded-2xl border border-white/10 bg-[#1a1b3b]/60 overflow-hidden">
               <div className="p-6 border-b border-white/10">
-                  <h3 className="text-lg font-bold text-white">Base de Usuários</h3>
+                  <h3 className="text-lg font-bold text-white">Base de Usuários (Tabela Profiles)</h3>
               </div>
               <div className="overflow-x-auto">
                   <table className="w-full text-left text-sm text-slate-400">
                       <thead className="bg-black/20 text-xs uppercase font-bold text-white">
                           <tr>
-                              <th className="px-6 py-4">Usuário</th>
-                              <th className="px-6 py-4">Status</th>
+                              <th className="px-6 py-4">ID / Email</th>
                               <th className="px-6 py-4">Plano</th>
-                              <th className="px-6 py-4">Aquários</th>
-                              <th className="px-6 py-4">Entrou em</th>
+                              <th className="px-6 py-4">Cadastro</th>
                           </tr>
                       </thead>
                       <tbody className="divide-y divide-white/5">
-                          <tr className="hover:bg-white/5 transition-colors">
-                              <td className="px-6 py-4 font-medium text-white">kbludobarman@gmail.com</td>
-                              <td className="px-6 py-4"><span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400">Ativo</span></td>
-                              <td className="px-6 py-4 text-[#4fb7b3] font-bold">MASTER</td>
-                              <td className="px-6 py-4">∞</td>
-                              <td className="px-6 py-4">Out 2023</td>
-                          </tr>
+                          {clients.length === 0 ? (
+                             <tr><td colSpan={3} className="px-6 py-4 text-center text-slate-500">Nenhum perfil encontrado na tabela 'profiles'.</td></tr>
+                          ) : (
+                             clients.map(client => (
+                                <tr key={client.id} className="hover:bg-white/5 transition-colors">
+                                    <td className="px-6 py-4 font-medium text-white">
+                                      {client.email || client.full_name || client.id.substring(0,8) + '...'}
+                                    </td>
+                                    <td className="px-6 py-4"><span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-bold ${client.subscription_tier === 'pro' || client.subscription_tier === 'master' ? 'bg-[#4fb7b3]/20 text-[#4fb7b3]' : 'bg-white/10 text-slate-300'}`}>{client.subscription_tier?.toUpperCase() || 'HOBBY'}</span></td>
+                                    <td className="px-6 py-4">{client.created_at ? new Date(client.created_at).toLocaleDateString('pt-BR') : '-'}</td>
+                                </tr>
+                             ))
+                          )}
                       </tbody>
                   </table>
               </div>
@@ -321,6 +373,7 @@ const Dashboard: React.FC = () => {
 
   const [isAdmin, setIsAdmin] = useState(false);
   const [isMaster, setIsMaster] = useState(false);
+  const [userPlan, setUserPlan] = useState<'hobby' | 'pro' | 'master'>('hobby');
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeView, setActiveView] = useState<'overview' | 'aquariums' | 'events' | 'tools' | 'account' | 'admin'>('overview');
@@ -377,21 +430,25 @@ const Dashboard: React.FC = () => {
   });
 
   useEffect(() => {
-    const checkAdmin = async () => {
+    const checkAdminAndProfile = async () => {
       if (!user) return;
       const email = user.email ? user.email.toLowerCase().trim() : '';
+      
+      // Hardcode Master access
       if (email === 'kbludobarman@gmail.com') {
         setIsAdmin(true);
         setIsMaster(true);
-        return;
-      }
-      const { data, error } = await supabase.from('admin_users').select('role, is_master').eq('user_id', user.id).single();
-      if (!error && data) {
-        setIsAdmin(true);
-        setIsMaster(!!data.is_master);
+        setUserPlan('master');
+      } else {
+        // Fetch Profile for normal users
+        // Tenta buscar o plano na tabela profiles. Se não existir, fica como hobby.
+        const { data: profile } = await supabase.from('profiles').select('subscription_tier').eq('id', user.id).single();
+        if (profile && profile.subscription_tier) {
+            setUserPlan(profile.subscription_tier as any);
+        }
       }
     };
-    checkAdmin();
+    checkAdminAndProfile();
   }, [user]);
 
   useEffect(() => {
@@ -406,8 +463,6 @@ const Dashboard: React.FC = () => {
     setIsLoadingAquariums(true);
     // MAPEAMENTO CORRETO PARA LEITURA:
     // O banco tem volume_liters, sump_volume_liters, tank_type
-    // A interface usa volume, sump_volume, type
-    // Usamos alias no SQL para transformar
     const { data, error } = await supabase
       .from('aquariums')
       .select('*, volume:volume_liters, sump_volume:sump_volume_liters, type:tank_type')
@@ -415,7 +470,6 @@ const Dashboard: React.FC = () => {
       
     if (error) {
       console.error('Erro aquariums:', error);
-      // alert('Erro ao carregar aquários: ' + error.message);
     }
     else {
       setMyAquariums(data || []);
@@ -478,7 +532,7 @@ const Dashboard: React.FC = () => {
 
         // MAPEAMENTO PARA ESCRITA (Payload):
         // As chaves devem ser EXATAMENTE como no banco de dados.
-        // Baseado nos seus prints: volume_liters, sump_volume_liters, tank_type
+        // volume_liters, sump_volume_liters, tank_type
         const payload = {
           name: aquariumFormData.name,
           volume_liters: volume, 
@@ -489,8 +543,6 @@ const Dashboard: React.FC = () => {
           equipment: aquariumFormData.equipment,
           user_id: user.id
         };
-
-        console.log('Enviando Payload:', payload);
 
         let error;
         if (editingAquarium) {
@@ -503,8 +555,7 @@ const Dashboard: React.FC = () => {
 
         if (error) {
             console.error('Supabase Error:', error);
-            // Mensagem de erro amigável mas técnica para debug
-            throw new Error(`Erro do Banco: ${error.message} (Código: ${error.code}). Detalhes: ${error.details || 'Verifique colunas e tipos'}`);
+            throw new Error(`Erro do Banco: ${error.message} (Código: ${error.code})`);
         } else {
             alert(editingAquarium ? 'Aquário atualizado com sucesso!' : 'Aquário cadastrado com sucesso!');
             setIsAquariumFormOpen(false);
@@ -632,8 +683,12 @@ const Dashboard: React.FC = () => {
             <div className="p-2 rounded-full bg-[#4fb7b3]/20"><Activity size={16} className="text-[#4fb7b3]" /></div>
             <span className="text-xs font-bold text-white">Status do Plano</span>
           </div>
-          <div className="text-xs text-slate-400">{isMaster ? <>Plano Master <span className="text-[#4fb7b3]">(Unlimited)</span></> : <>Plano Hobby <span className="text-[#4fb7b3]">(Free)</span></>}</div>
-          <div className="mt-3 h-1.5 w-full bg-white/10 rounded-full overflow-hidden"><div className={`h-full bg-[#4fb7b3] rounded-full ${isMaster ? 'w-full' : 'w-1/3'}`} /></div>
+          <div className="text-xs text-slate-400">
+            {userPlan === 'master' ? <>Plano Master <span className="text-[#4fb7b3]">(Unlimited)</span></> : 
+             userPlan === 'pro' ? <>Plano Profissional <span className="text-[#4fb7b3]">(Pro)</span></> : 
+             <>Plano Hobby <span className="text-[#4fb7b3]">(Free)</span></>}
+          </div>
+          <div className="mt-3 h-1.5 w-full bg-white/10 rounded-full overflow-hidden"><div className={`h-full bg-[#4fb7b3] rounded-full ${userPlan === 'master' ? 'w-full' : userPlan === 'pro' ? 'w-2/3' : 'w-1/3'}`} /></div>
         </div>
         <button onClick={() => setIsLogoutConfirmOpen(true)} className="w-full flex items-center gap-2 text-rose-400 hover:text-rose-300 transition-colors text-xs font-bold uppercase tracking-widest px-2"><LogOut size={16} /><span>Sair</span></button>
       </div>
@@ -644,7 +699,7 @@ const Dashboard: React.FC = () => {
     <div className="min-h-screen bg-[#05051a] text-white font-sans selection:bg-[#4fb7b3] selection:text-black overflow-hidden flex">
       {/* Sidebar Desktop */}
       <aside className="hidden md:flex w-[280px] flex-col bg-[#05051a] border-r border-white/5 shadow-[0_0_40px_rgba(0,0,0,0.6)] h-screen fixed left-0 top-0 z-20">
-        <div className="p-8 pb-4"><div className="flex items-center gap-3 text-xl font-heading font-bold tracking-tighter text-white"><span className="text-[#4fb7b3]">●</span> TITAN SYSTEM v3.0</div></div>
+        <div className="p-8 pb-4"><div className="flex items-center gap-3 text-xl font-heading font-bold tracking-tighter text-white"><span className="text-[#4fb7b3]">●</span> TITAN SYSTEM v3.1</div></div>
         <nav className="flex-1 flex flex-col py-4 overflow-y-auto custom-scrollbar">{renderNavItems()}</nav>
       </aside>
 
@@ -654,7 +709,7 @@ const Dashboard: React.FC = () => {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex md:hidden">
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsSidebarOpen(false)} />
             <motion.aside initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }} transition={{ type: 'spring', stiffness: 260, damping: 30 }} className="relative z-50 flex h-full w-[280px] flex-col bg-[#05051a] border-r border-white/10">
-              <div className="p-8 pb-4"><div className="flex items-center gap-3 text-xl font-heading font-bold tracking-tighter text-white"><span className="text-[#4fb7b3]">●</span> TITAN SYSTEM v3.0</div></div>
+              <div className="p-8 pb-4"><div className="flex items-center gap-3 text-xl font-heading font-bold tracking-tighter text-white"><span className="text-[#4fb7b3]">●</span> TITAN SYSTEM v3.1</div></div>
               <nav className="flex-1 flex flex-col py-4 overflow-y-auto">{renderNavItems()}</nav>
             </motion.aside>
           </motion.div>
