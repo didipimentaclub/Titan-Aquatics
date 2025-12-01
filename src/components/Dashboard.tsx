@@ -101,7 +101,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isMaster, events, onAddEvent, o
   const [loading, setLoading] = useState(false);
   
   // Estados para métricas reais
-  const [stats, setStats] = useState({ clients: 0, aquariums: 0, revenue: 0 });
+  const [stats, setStats] = useState({ clients: 0, aquariums: 0, revenue: 0, proCount: 0 });
   const [clients, setClients] = useState<UserProfile[]>([]);
   const [loadingStats, setLoadingStats] = useState(false);
 
@@ -113,19 +113,24 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isMaster, events, onAddEvent, o
   const fetchStats = async () => {
     setLoadingStats(true);
     try {
-      // Conta perfis (clientes)
+      // 1. Total de Clientes
       const { count: clientsCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
-      // Conta aquários
+      
+      // 2. Total de Aquários
       const { count: tanksCount } = await supabase.from('aquariums').select('*', { count: 'exact', head: true });
       
-      // Cálculo Estimado de Receita (Simulação baseada no count)
-      // Ex: 10% Pro (R$49) + 90% Hobby (R$29) - Ajuste conforme realidade futura
-      const estimatedRevenue = (clientsCount || 0) * 29.90; 
+      // 3. Receita Real (Baseada em quantos são PRO)
+      // Nota: Precisa da Policy RLS correta para o admin ler isso
+      const { count: proCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('subscription_tier', 'pro');
+      
+      // Receita Estimada: Pro * R$49.98 (Hobby é Grátis)
+      const estimatedRevenue = (proCount || 0) * 49.98;
 
       setStats({
         clients: clientsCount || 0,
         aquariums: tanksCount || 0,
-        revenue: estimatedRevenue
+        revenue: estimatedRevenue,
+        proCount: proCount || 0
       });
     } catch (e) {
       console.error("Erro ao carregar stats", e);
@@ -136,7 +141,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isMaster, events, onAddEvent, o
 
   const fetchClients = async () => {
     // Tenta buscar dados da tabela profiles
-    const { data } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
+    const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+    
+    if (error) console.error("Erro ao buscar clientes:", error);
     if (data) setClients(data as any);
   };
 
@@ -201,21 +211,23 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isMaster, events, onAddEvent, o
           <div className="grid gap-4 md:grid-cols-3">
             <div className="rounded-2xl border border-white/5 bg-[#1a1b3b]/60 p-6 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-4 opacity-5"><Users size={64} /></div>
-                <p className="text-xs text-slate-400 uppercase tracking-widest font-bold">Clientes Ativos</p>
+                <p className="text-xs text-slate-400 uppercase tracking-widest font-bold">Clientes Totais</p>
                 <p className="mt-2 text-3xl font-bold text-white">{loadingStats ? '...' : stats.clients}</p>
-                <div className="mt-4 flex items-center gap-2 text-emerald-400 text-xs font-bold"><TrendingUp size={14} /> Base Atual (Profiles)</div>
+                <div className="mt-4 flex items-center gap-2 text-emerald-400 text-xs font-bold"><TrendingUp size={14} /> Base de Usuários</div>
             </div>
             <div className="rounded-2xl border border-white/5 bg-[#1a1b3b]/60 p-6 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-4 opacity-5"><Fish size={64} /></div>
                 <p className="text-xs text-slate-400 uppercase tracking-widest font-bold">Aquários Monitorados</p>
                 <p className="mt-2 text-3xl font-bold text-white">{loadingStats ? '...' : stats.aquariums}</p>
-                <div className="mt-4 flex items-center gap-2 text-emerald-400 text-xs font-bold"><Activity size={14} /> Total Cadastrado</div>
+                <div className="mt-4 flex items-center gap-2 text-emerald-400 text-xs font-bold"><Activity size={14} /> Ecossistemas Ativos</div>
             </div>
             <div className="rounded-2xl border border-white/5 bg-[#1a1b3b]/60 p-6 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-4 opacity-5"><DollarSign size={64} /></div>
-                <p className="text-xs text-slate-400 uppercase tracking-widest font-bold">Receita Estimada</p>
+                <p className="text-xs text-slate-400 uppercase tracking-widest font-bold">Receita Mensal (Est.)</p>
                 <p className="mt-2 text-3xl font-bold text-[#4fb7b3]">R$ {loadingStats ? '...' : stats.revenue.toFixed(2)}</p>
-                <div className="mt-4 text-slate-500 text-xs">Baseado em assinaturas</div>
+                <div className="mt-4 text-slate-500 text-xs">
+                    {stats.proCount} Assinantes Pro (R$ 49,98)
+                </div>
             </div>
           </div>
       )}
@@ -229,7 +241,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isMaster, events, onAddEvent, o
                   <table className="w-full text-left text-sm text-slate-400">
                       <thead className="bg-black/20 text-xs uppercase font-bold text-white">
                           <tr>
-                              <th className="px-6 py-4">ID / Email</th>
+                              <th className="px-6 py-4">Email</th>
                               <th className="px-6 py-4">Plano</th>
                               <th className="px-6 py-4">Cadastro</th>
                           </tr>
@@ -241,7 +253,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isMaster, events, onAddEvent, o
                              clients.map(client => (
                                 <tr key={client.id} className="hover:bg-white/5 transition-colors">
                                     <td className="px-6 py-4 font-medium text-white">
-                                      {client.email || client.full_name || client.id.substring(0,8) + '...'}
+                                      {client.email || client.full_name || 'Email não disponível'}
                                     </td>
                                     <td className="px-6 py-4"><span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-bold ${client.subscription_tier === 'pro' || client.subscription_tier === 'master' ? 'bg-[#4fb7b3]/20 text-[#4fb7b3]' : 'bg-white/10 text-slate-300'}`}>{client.subscription_tier?.toUpperCase() || 'HOBBY'}</span></td>
                                     <td className="px-6 py-4">{client.created_at ? new Date(client.created_at).toLocaleDateString('pt-BR') : '-'}</td>
@@ -699,7 +711,7 @@ const Dashboard: React.FC = () => {
     <div className="min-h-screen bg-[#05051a] text-white font-sans selection:bg-[#4fb7b3] selection:text-black overflow-hidden flex">
       {/* Sidebar Desktop */}
       <aside className="hidden md:flex w-[280px] flex-col bg-[#05051a] border-r border-white/5 shadow-[0_0_40px_rgba(0,0,0,0.6)] h-screen fixed left-0 top-0 z-20">
-        <div className="p-8 pb-4"><div className="flex items-center gap-3 text-xl font-heading font-bold tracking-tighter text-white"><span className="text-[#4fb7b3]">●</span> TITAN SYSTEM v3.1</div></div>
+        <div className="p-8 pb-4"><div className="flex items-center gap-3 text-xl font-heading font-bold tracking-tighter text-white"><span className="text-[#4fb7b3]">●</span> TITAN SYSTEM v3.2</div></div>
         <nav className="flex-1 flex flex-col py-4 overflow-y-auto custom-scrollbar">{renderNavItems()}</nav>
       </aside>
 
@@ -709,7 +721,7 @@ const Dashboard: React.FC = () => {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex md:hidden">
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsSidebarOpen(false)} />
             <motion.aside initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }} transition={{ type: 'spring', stiffness: 260, damping: 30 }} className="relative z-50 flex h-full w-[280px] flex-col bg-[#05051a] border-r border-white/10">
-              <div className="p-8 pb-4"><div className="flex items-center gap-3 text-xl font-heading font-bold tracking-tighter text-white"><span className="text-[#4fb7b3]">●</span> TITAN SYSTEM v3.1</div></div>
+              <div className="p-8 pb-4"><div className="flex items-center gap-3 text-xl font-heading font-bold tracking-tighter text-white"><span className="text-[#4fb7b3]">●</span> TITAN SYSTEM v3.2</div></div>
               <nav className="flex-1 flex flex-col py-4 overflow-y-auto">{renderNavItems()}</nav>
             </motion.aside>
           </motion.div>
