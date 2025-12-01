@@ -1,3 +1,4 @@
+
 import React, { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { Globe, Zap, Menu, X, Calendar, ChevronLeft, ChevronRight, Droplets, Activity, Fish, ShieldCheck, Plane, BookOpen, ChevronDown, CheckCircle, Info, Twitter, Instagram, Linkedin, Youtube } from 'lucide-react';
@@ -290,10 +291,11 @@ const LandingPage: React.FC = () => {
       </AnimatePresence>
 
       {/* HERO SECTION */}
-      <header className="relative h-[100svh] min-h-[600px] flex flex-col items-center justify-center overflow-hidden px-4">
+      {/* Alterado de h-[100svh] fixo para min-h-[100svh] py-20 para permitir crescimento e evitar sobreposição */}
+      <header className="relative min-h-[100svh] flex flex-col items-center justify-center overflow-hidden px-4 py-20">
         <motion.div 
           style={{ y, opacity }}
-          className="z-10 text-center flex flex-col items-center w-full max-w-6xl pb-24 md:pb-20"
+          className="z-10 text-center flex flex-col items-center w-full max-w-6xl pb-10"
         >
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -359,23 +361,29 @@ const LandingPage: React.FC = () => {
           </motion.div>
         </motion.div>
 
-        <div className="absolute bottom-12 md:bottom-16 left-0 w-full py-4 md:py-6 bg-white text-black z-20 overflow-hidden border-y-4 border-black shadow-[0_0_40px_rgba(255,255,255,0.4)]">
-          <motion.div 
-            className="flex w-fit will-change-transform"
-            animate={{ x: "-50%" }}
-            transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
-          >
-            {[0, 1].map((key) => (
-              <div key={key} className="flex whitespace-nowrap shrink-0">
-                {[...Array(4)].map((_, i) => (
-                  <span key={i} className="text-3xl md:text-7xl font-heading font-black px-8 flex items-center gap-4">
-                    TITAN AQUATICS <span className="text-black text-2xl md:text-4xl">●</span> 
-                    CONTROLE SEU ECOSSISTEMA <span className="text-black text-2xl md:text-4xl">●</span> 
-                  </span>
+        {/* Faixa ECOSSISTEMA - Fluxo Relativo (não absoluto) para empurrar o conteúdo e não cobrir botões */}
+        <div className="w-full px-4 md:px-6 mt-12 md:mt-16 z-20">
+          <div className="relative max-w-6xl mx-auto border-y-4 border-black bg-white/90 shadow-[0_18px_0_rgba(0,0,0,1)]">
+            <div className="relative flex items-center justify-center overflow-hidden">
+              <motion.div
+                className="flex items-center py-3 md:py-4 whitespace-nowrap"
+                animate={{ x: ["0%", "-50%"] }}
+                transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
+              >
+                {/* Texto duplicado para loop perfeito */}
+                {[0, 1].map((key) => (
+                  <div key={key} className="flex whitespace-nowrap shrink-0">
+                    <p className="text-xl md:text-2xl font-black tracking-[0.25em] uppercase px-4 text-black">
+                      ECOSSISTEMA · TITAN AQUATICS · CONTROL · 
+                    </p>
+                    <p className="text-xl md:text-2xl font-black tracking-[0.25em] uppercase px-4 text-black">
+                      ECOSSISTEMA · TITAN AQUATICS · CONTROL · 
+                    </p>
+                  </div>
                 ))}
-              </div>
-            ))}
-          </motion.div>
+              </motion.div>
+            </div>
+          </div>
         </div>
       </header>
 
@@ -662,8 +670,6 @@ const LandingPage: React.FC = () => {
           </div>
         </div>
       </section>
-
-      {/* CTA Final Removed as requested */}
 
       <footer className="relative z-10 border-t border-white/10 py-12 md:py-16 bg-black/80 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
