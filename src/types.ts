@@ -46,7 +46,7 @@ export interface AquariumEvent {
   date: string;
   location: string;
   description: string;
-  type: 'Feira' | 'Encontro' | 'Campeonato' | 'Workshop';
+  type: 'Feira' | 'Encontro' | 'Campeonato' | 'Workshop' | 'Loja';
   image?: string;
   link?: string;
   video_url?: string;

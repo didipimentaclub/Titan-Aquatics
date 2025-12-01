@@ -264,7 +264,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isMaster, events, onAddEvent, o
                    <div className="grid grid-cols-2 gap-4">
                      <div>
                         <label className="text-xs font-bold text-[#4fb7b3] uppercase">Data</label>
-                        <input type="text" required placeholder="Ex: 15/08/2026" className="w-full bg-black/30 border border-white/10 rounded p-2 text-white text-sm mt-1 focus:border-[#4fb7b3] outline-none" value={newEvent.date} onChange={e => setNewEvent({...newEvent, date: e.target.value})} />
+                        <input 
+                          type="date" 
+                          required 
+                          className="w-full bg-black/30 border border-white/10 rounded p-2 text-white text-sm mt-1 focus:border-[#4fb7b3] outline-none text-slate-300" 
+                          value={newEvent.date} 
+                          onChange={e => setNewEvent({...newEvent, date: e.target.value})} 
+                        />
                      </div>
                      <div>
                         <label className="text-xs font-bold text-[#4fb7b3] uppercase">Tipo</label>
@@ -273,6 +279,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isMaster, events, onAddEvent, o
                           <option value="Encontro">Encontro</option>
                           <option value="Campeonato">Campeonato</option>
                           <option value="Workshop">Workshop</option>
+                          <option value="Loja">Loja</option>
                         </select>
                      </div>
                    </div>
@@ -637,7 +644,7 @@ const Dashboard: React.FC = () => {
     <div className="min-h-screen bg-[#05051a] text-white font-sans selection:bg-[#4fb7b3] selection:text-black overflow-hidden flex">
       {/* Sidebar Desktop */}
       <aside className="hidden md:flex w-[280px] flex-col bg-[#05051a] border-r border-white/5 shadow-[0_0_40px_rgba(0,0,0,0.6)] h-screen fixed left-0 top-0 z-20">
-        <div className="p-8 pb-4"><div className="flex items-center gap-3 text-xl font-heading font-bold tracking-tighter text-white"><span className="text-[#4fb7b3]">●</span> TITAN SYSTEM v2.0</div></div>
+        <div className="p-8 pb-4"><div className="flex items-center gap-3 text-xl font-heading font-bold tracking-tighter text-white"><span className="text-[#4fb7b3]">●</span> TITAN SYSTEM v3.0</div></div>
         <nav className="flex-1 flex flex-col py-4 overflow-y-auto custom-scrollbar">{renderNavItems()}</nav>
       </aside>
 
@@ -647,7 +654,7 @@ const Dashboard: React.FC = () => {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex md:hidden">
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsSidebarOpen(false)} />
             <motion.aside initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }} transition={{ type: 'spring', stiffness: 260, damping: 30 }} className="relative z-50 flex h-full w-[280px] flex-col bg-[#05051a] border-r border-white/10">
-              <div className="p-8 pb-4"><div className="flex items-center gap-3 text-xl font-heading font-bold tracking-tighter text-white"><span className="text-[#4fb7b3]">●</span> TITAN SYSTEM v2.0</div></div>
+              <div className="p-8 pb-4"><div className="flex items-center gap-3 text-xl font-heading font-bold tracking-tighter text-white"><span className="text-[#4fb7b3]">●</span> TITAN SYSTEM v3.0</div></div>
               <nav className="flex-1 flex flex-col py-4 overflow-y-auto">{renderNavItems()}</nav>
             </motion.aside>
           </motion.div>
@@ -731,7 +738,7 @@ const Dashboard: React.FC = () => {
                     <div key={event.id} className="group flex flex-col md:flex-row gap-0 rounded-2xl bg-[#1a1b3b]/40 border border-white/5 hover:border-[#4fb7b3]/30 transition-colors overflow-hidden">
                       <div className="flex-shrink-0 w-full md:w-64 bg-white/5 flex flex-col">
                         {event.video_url ? <div className="relative w-full pt-[56.25%] bg-black"><iframe src={getEmbedUrl(event.video_url)!} className="absolute inset-0 w-full h-full" allowFullScreen title={event.title} /></div> : event.image ? <div className="h-40 w-full"><img src={event.image} alt={event.title} className="w-full h-full object-cover" /></div> : null}
-                        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center"><span className="text-xs font-bold text-[#4fb7b3] uppercase tracking-widest mb-1">{event.type}</span><span className="text-4xl font-bold text-white leading-none">{event.date.split('/')[0]}</span></div>
+                        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center"><span className="text-xs font-bold text-[#4fb7b3] uppercase tracking-widest mb-1">{event.type}</span><span className="text-4xl font-bold text-white leading-none">{event.date.includes('-') ? event.date.split('-')[2] : event.date.split('/')[0]}</span></div>
                       </div>
                       <div className="flex-1 p-6 md:p-8 flex flex-col justify-center">
                         <h3 className="text-2xl font-heading font-bold text-white mb-2">{event.title}</h3>
