@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard,
@@ -35,7 +34,11 @@ import {
   ArrowLeft,
   Users,
   TrendingUp,
-  DollarSign
+  DollarSign,
+  Layers,
+  Wind,
+  Zap,
+  Box
 } from 'lucide-react';
 
 import { motion, AnimatePresence } from 'framer-motion';
@@ -113,17 +116,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isMaster, events, onAddEvent, o
   const fetchStats = async () => {
     setLoadingStats(true);
     try {
-      // 1. Total de Clientes
       const { count: clientsCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
-      
-      // 2. Total de Aquários
       const { count: tanksCount } = await supabase.from('aquariums').select('*', { count: 'exact', head: true });
-      
-      // 3. Receita Real (Baseada em quantos são PRO)
-      // Nota: Precisa da Policy RLS correta para o admin ler isso
       const { count: proCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('subscription_tier', 'pro');
-      
-      // Receita Estimada: Pro * R$49.98 (Hobby é Grátis)
       const estimatedRevenue = (proCount || 0) * 49.98;
 
       setStats({
@@ -140,7 +135,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isMaster, events, onAddEvent, o
   };
 
   const fetchClients = async () => {
-    // Tenta buscar dados da tabela profiles
     const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -364,7 +358,26 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isMaster, events, onAddEvent, o
                    </div>
                    <div>
                      <label className="text-xs font-bold text-[#4fb7b3] uppercase flex items-center gap-2"><Youtube size={14} /> Vídeo (YouTube)</label>
-                     <input type="text" placeholder="https://www.youtube.com/watch?v=..." className="w-full bg-black/30 border border-white/10 rounded p-2 text-white text-sm mt-1 focus:border-[#4fb7b3] outline-none" value={newEvent.video_url || ''} onChange={e => setNewEvent({...newEvent, video_url: e.target.value})} />
+                     <div className="flex gap-2 mt-1">
+                       <input 
+                         type="text" 
+                         placeholder="https://www.youtube.com/watch?v=..." 
+                         className="flex-1 bg-black/30 border border-white/10 rounded p-2 text-white text-sm focus:border-[#4fb7b3] outline-none" 
+                         value={newEvent.video_url || ''} 
+                         onChange={e => setNewEvent({...newEvent, video_url: e.target.value})} 
+                       />
+                       {newEvent.video_url && (
+                         <a 
+                           href={newEvent.video_url} 
+                           target="_blank" 
+                           rel="noopener noreferrer" 
+                           className="p-2 bg-white/5 border border-white/10 rounded hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+                           title="Abrir link"
+                         >
+                           <ExternalLink size={18} />
+                         </a>
+                       )}
+                     </div>
                    </div>
                    <div><label className="text-xs font-bold text-[#4fb7b3] uppercase">Link Externo</label><input type="text" placeholder="Site do evento" className="w-full bg-black/30 border border-white/10 rounded p-2 text-white text-sm mt-1 focus:border-[#4fb7b3] outline-none" value={newEvent.link || ''} onChange={e => setNewEvent({...newEvent, link: e.target.value})} /></div>
                    <div><label className="text-xs font-bold text-[#4fb7b3] uppercase">Descrição</label><textarea className="w-full bg-black/30 border border-white/10 rounded p-2 text-white text-sm mt-1 h-20 focus:border-[#4fb7b3] outline-none" value={newEvent.description} onChange={e => setNewEvent({...newEvent, description: e.target.value})} /></div>
@@ -390,13 +403,27 @@ const Dashboard: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeView, setActiveView] = useState<'overview' | 'aquariums' | 'events' | 'tools' | 'account' | 'admin'>('overview');
   
-  const [activeTool, setActiveTool] = useState<'calc' | 'conv' | 'diag' | null>(null);
+  // Tools States
+  const [activeTool, setActiveTool] = useState<'calc' | 'conv' | 'diag' | 'substrate' | 'co2' | 'energy' | null>(null);
 
-  const [calcDims, setCalcDims] = useState({ length: 0, width: 0, height: 0 });
+  // Calc Volume State
+  const [calcType, setCalcType] = useState<'rect' | 'cylinder'>('rect');
+  const [calcDims, setCalcDims] = useState({ length: 0, width: 0, height: 0, radius: 0 });
   const [calcSumpDims, setCalcSumpDims] = useState({ length: 0, width: 0, height: 0 });
   const [calcHasSump, setCalcHasSump] = useState(false);
   
-  const [convCategory, setConvCategory] = useState<'temp' | 'vol' | 'len'>('temp');
+  // Substrate Calc State
+  const [subDims, setSubDims] = useState({ length: 60, width: 30, depth: 5 });
+  const [subType, setSubType] = useState<'sand' | 'soil' | 'gravel'>('sand');
+
+  // CO2 Calc State
+  const [co2Params, setCo2Params] = useState({ ph: 7.0, kh: 4 });
+
+  // Energy Calc State
+  const [energyParams, setEnergyParams] = useState({ watts: 50, hours: 8, costKwh: 0.85 });
+
+  // Converter State
+  const [convCategory, setConvCategory] = useState<'temp' | 'vol' | 'len' | 'gh'>('temp');
   const [convValue, setConvValue] = useState<string>('');
   
   const [isTravelModalOpen, setIsTravelModalOpen] = useState(false);
@@ -453,7 +480,6 @@ const Dashboard: React.FC = () => {
         setUserPlan('master');
       } else {
         // Fetch Profile for normal users
-        // Tenta buscar o plano na tabela profiles. Se não existir, fica como hobby.
         const { data: profile } = await supabase.from('profiles').select('subscription_tier').eq('id', user.id).single();
         if (profile && profile.subscription_tier) {
             setUserPlan(profile.subscription_tier as any);
@@ -523,20 +549,20 @@ const Dashboard: React.FC = () => {
     if (!user) return;
 
     try {
-        if (!aquariumFormData.name) {
+        if (!aquariumFormData.name?.trim()) {
             throw new Error('O nome do aquário é obrigatório.');
         }
         
         const volStr = String(aquariumFormData.volume || '').replace(',', '.').trim();
-        const sumpStr = String(aquariumFormData.sump_volume || '').replace(',', '.').trim();
-        
         const volume = parseFloat(volStr);
-        const sump_volume = hasSump ? parseFloat(sumpStr) : 0;
-
+        
         if (isNaN(volume) || volume <= 0) {
-            throw new Error('Volume inválido. Insira um número maior que zero.');
+            throw new Error('Volume deve ser um número maior que zero.');
         }
 
+        const sumpStr = String(aquariumFormData.sump_volume || '').replace(',', '.').trim();
+        const sump_volume = hasSump ? parseFloat(sumpStr) : 0;
+        
         // Data null se vazia para evitar erro de formato
         const setup_date = aquariumFormData.setup_date && aquariumFormData.setup_date.trim() !== '' 
             ? aquariumFormData.setup_date 
@@ -635,10 +661,55 @@ const Dashboard: React.FC = () => {
     setIsTravelModalOpen(false);
   };
 
+  // --- Logic for New Tools ---
+
   const calculateVolume = () => {
-    const displayVol = (calcDims.length * calcDims.width * calcDims.height) / 1000;
+    let displayVol = 0;
+    if (calcType === 'rect') {
+      displayVol = (calcDims.length * calcDims.width * calcDims.height) / 1000;
+    } else {
+      // Cylinder: pi * r^2 * h
+      displayVol = (Math.PI * Math.pow(calcDims.radius, 2) * calcDims.height) / 1000;
+    }
     const sumpVol = calcHasSump ? (calcSumpDims.length * calcSumpDims.width * calcSumpDims.height) / 1000 : 0;
-    return { display: displayVol, sump: sumpVol, total: displayVol + sumpVol };
+    const total = displayVol + sumpVol;
+    // Peso aproximado (água + vidro estimado + substrato base 10%)
+    const weight = total + (total * 0.15); 
+    return { display: displayVol, sump: sumpVol, total, weight };
+  };
+
+  const calculateSubstrate = () => {
+    // Volume em litros do substrato = (C * L * Altura) / 1000
+    const volSub = (subDims.length * subDims.width * subDims.depth) / 1000;
+    // Densidade aprox: Areia (1.6 kg/L), Solo (1.0 kg/L), Cascalho (1.5 kg/L)
+    let density = 1.5;
+    if (subType === 'soil') density = 1.0;
+    if (subType === 'sand') density = 1.6;
+    
+    return (volSub * density).toFixed(1);
+  };
+
+  const calculateCO2 = () => {
+    // Formula: CO2 = 3 * KH * 10^(7-pH)
+    const co2 = 3 * co2Params.kh * Math.pow(10, 7 - co2Params.ph);
+    let status = 'Baixo (Algas)';
+    let color = 'text-yellow-400';
+    
+    if (co2 >= 15 && co2 <= 30) {
+      status = 'Ideal (Plantas)';
+      color = 'text-emerald-400';
+    } else if (co2 > 30) {
+      status = 'Alto (Perigo Peixes)';
+      color = 'text-rose-400';
+    }
+    return { val: co2.toFixed(1), status, color };
+  };
+
+  const calculateEnergy = () => {
+    // (Watts * Horas * 30 dias) / 1000 = kWh mensal
+    const kwhMonth = (energyParams.watts * energyParams.hours * 30) / 1000;
+    const cost = kwhMonth * energyParams.costKwh;
+    return { kwh: kwhMonth.toFixed(1), cost: cost.toFixed(2) };
   };
 
   const calculateConversion = () => {
@@ -647,6 +718,7 @@ const Dashboard: React.FC = () => {
     if (convCategory === 'temp') return { val1: `${((val * 9/5) + 32).toFixed(1)} °F`, val2: `${((val - 32) * 5/9).toFixed(1)} °C` };
     if (convCategory === 'vol') return { val1: `${(val * 0.264172).toFixed(1)} Gal`, val2: `${(val * 3.78541).toFixed(1)} L` };
     if (convCategory === 'len') return { val1: `${(val * 0.393701).toFixed(2)} in`, val2: `${(val * 2.54).toFixed(1)} cm` };
+    if (convCategory === 'gh') return { val1: `${(val * 17.8).toFixed(0)} ppm`, val2: `${(val * 0.056).toFixed(1)} dGH` };
     return { val1: '-', val2: '-' };
   };
 
@@ -711,7 +783,7 @@ const Dashboard: React.FC = () => {
     <div className="min-h-screen bg-[#05051a] text-white font-sans selection:bg-[#4fb7b3] selection:text-black overflow-hidden flex">
       {/* Sidebar Desktop */}
       <aside className="hidden md:flex w-[280px] flex-col bg-[#05051a] border-r border-white/5 shadow-[0_0_40px_rgba(0,0,0,0.6)] h-screen fixed left-0 top-0 z-20">
-        <div className="p-8 pb-4"><div className="flex items-center gap-3 text-xl font-heading font-bold tracking-tighter text-white"><span className="text-[#4fb7b3]">●</span> TITAN SYSTEM v3.2</div></div>
+        <div className="p-8 pb-4"><div className="flex items-center gap-3 text-xl font-heading font-bold tracking-tighter text-white"><span className="text-[#4fb7b3]">●</span> TITAN SYSTEM v5.1</div></div>
         <nav className="flex-1 flex flex-col py-4 overflow-y-auto custom-scrollbar">{renderNavItems()}</nav>
       </aside>
 
@@ -721,7 +793,7 @@ const Dashboard: React.FC = () => {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex md:hidden">
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsSidebarOpen(false)} />
             <motion.aside initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }} transition={{ type: 'spring', stiffness: 260, damping: 30 }} className="relative z-50 flex h-full w-[280px] flex-col bg-[#05051a] border-r border-white/10">
-              <div className="p-8 pb-4"><div className="flex items-center gap-3 text-xl font-heading font-bold tracking-tighter text-white"><span className="text-[#4fb7b3]">●</span> TITAN SYSTEM v3.2</div></div>
+              <div className="p-8 pb-4"><div className="flex items-center gap-3 text-xl font-heading font-bold tracking-tighter text-white"><span className="text-[#4fb7b3]">●</span> TITAN SYSTEM v5.1</div></div>
               <nav className="flex-1 flex flex-col py-4 overflow-y-auto">{renderNavItems()}</nav>
             </motion.aside>
           </motion.div>
@@ -821,12 +893,19 @@ const Dashboard: React.FC = () => {
           )}
 
           {activeView === 'tools' && (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8 max-w-5xl mx-auto">
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8 max-w-6xl mx-auto">
               {!activeTool ? (
                 <>
-                  <div className="text-center mb-8"><h2 className="text-2xl font-heading font-bold text-white">Ferramentas Úteis</h2><p className="text-slate-400 text-sm">Utilitários para o dia a dia.</p></div>
+                  <div className="text-center mb-8"><h2 className="text-2xl font-heading font-bold text-white">Laboratório de Ferramentas</h2><p className="text-slate-400 text-sm">Utilitários essenciais para manutenção e planejamento.</p></div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {[{ id: 'calc', name: 'Calculadora de Volume', icon: Calculator, desc: 'Calcule o volume real do seu tanque.' }, { id: 'conv', name: 'Conversor de Medidas', icon: ArrowRightLeft, desc: 'Converta Galões/Litros, °F/°C.' }, { id: 'diag', name: 'Diagnóstico IA', icon: Stethoscope, desc: 'Identifique doenças com a IA.' }].map((tool) => (
+                    {[
+                      { id: 'calc', name: 'Calculadora de Volume', icon: Calculator, desc: 'Calcule o volume de tanques retangulares e cilíndricos, incluindo sump.' },
+                      { id: 'substrate', name: 'Calculadora de Substrato', icon: Layers, desc: 'Descubra a quantidade exata de areia ou solo fértil para seu projeto.' },
+                      { id: 'co2', name: 'Tabela de CO2', icon: Wind, desc: 'Verifique a concentração de CO2 baseada na relação pH x KH.' },
+                      { id: 'energy', name: 'Custo de Energia', icon: Zap, desc: 'Estime o consumo elétrico mensal dos seus equipamentos.' },
+                      { id: 'conv', name: 'Conversor de Medidas', icon: ArrowRightLeft, desc: 'Converta Galões/Litros, Graus, Dureza (dGH/ppm).' },
+                      { id: 'diag', name: 'Diagnóstico IA', icon: Stethoscope, desc: 'Identifique doenças e receba tratamentos com a IA.' }
+                    ].map((tool) => (
                       <button key={tool.id} onClick={() => setActiveTool(tool.id as any)} className="flex flex-col items-center text-center p-8 rounded-2xl border border-white/10 bg-[#1a1b3b]/60 hover:bg-[#1a1b3b] hover:border-[#4fb7b3]/50 transition-all group">
                         <div className="p-4 rounded-full bg-white/5 text-white mb-4 group-hover:bg-[#4fb7b3] group-hover:text-black transition-colors"><tool.icon size={32} /></div>
                         <h3 className="text-lg font-bold text-white mb-2">{tool.name}</h3><p className="text-sm text-slate-400 leading-relaxed">{tool.desc}</p>
@@ -836,33 +915,125 @@ const Dashboard: React.FC = () => {
                 </>
               ) : (
                 <div className="space-y-6">
-                   <button onClick={() => setActiveTool(null)} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm uppercase tracking-widest font-bold mb-4"><ArrowLeft size={16} /> Voltar</button>
+                   <button onClick={() => setActiveTool(null)} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm uppercase tracking-widest font-bold mb-4"><ArrowLeft size={16} /> Voltar para Ferramentas</button>
+                   
+                   {/* CALCULADORA DE VOLUME */}
                    {activeTool === 'calc' && (
-                     <div className="bg-[#1a1b3b]/60 border border-white/10 rounded-2xl p-8 max-w-2xl mx-auto">
-                        <h3 className="text-xl font-heading font-bold text-white mb-6 flex items-center gap-2"><Calculator size={24} className="text-[#4fb7b3]" /> Calculadora</h3>
+                     <div className="bg-[#1a1b3b]/60 border border-white/10 rounded-2xl p-8 max-w-3xl mx-auto">
+                        <h3 className="text-xl font-heading font-bold text-white mb-6 flex items-center gap-2"><Calculator size={24} className="text-[#4fb7b3]" /> Calculadora de Volume</h3>
                         <div className="space-y-6">
-                           <div className="grid grid-cols-3 gap-4">
-                              {['length', 'width', 'height'].map(d => <div key={d}><label className="text-xs font-bold text-[#4fb7b3] uppercase">{d === 'length' ? 'Comp.' : d === 'width' ? 'Larg.' : 'Alt.'} (cm)</label><input type="number" className="w-full bg-black/30 border border-white/10 rounded p-3 text-white mt-1" value={(calcDims as any)[d] || ''} onChange={e => setCalcDims({...calcDims, [d]: parseFloat(e.target.value)})} /></div>)}
+                           <div className="flex bg-black/30 p-1 rounded-lg mb-4 w-fit">
+                              <button onClick={() => setCalcType('rect')} className={`px-4 py-2 text-xs font-bold uppercase rounded ${calcType === 'rect' ? 'bg-[#4fb7b3] text-black' : 'text-slate-400'}`}>Retangular</button>
+                              <button onClick={() => setCalcType('cylinder')} className={`px-4 py-2 text-xs font-bold uppercase rounded ${calcType === 'cylinder' ? 'bg-[#4fb7b3] text-black' : 'text-slate-400'}`}>Cilíndrico</button>
                            </div>
-                           <div className="flex items-center gap-2"><input type="checkbox" id="calcSump" className="w-4 h-4" checked={calcHasSump} onChange={e => setCalcHasSump(e.target.checked)} /><label htmlFor="calcSump" className="text-sm text-white font-bold cursor-pointer">Sump?</label></div>
+                           
+                           {calcType === 'rect' ? (
+                             <div className="grid grid-cols-3 gap-4">
+                                {['length', 'width', 'height'].map(d => <div key={d}><label className="text-xs font-bold text-[#4fb7b3] uppercase">{d === 'length' ? 'Comp.' : d === 'width' ? 'Larg.' : 'Alt.'} (cm)</label><input type="number" className="w-full bg-black/30 border border-white/10 rounded p-3 text-white mt-1" value={(calcDims as any)[d] || ''} onChange={e => setCalcDims({...calcDims, [d]: parseFloat(e.target.value)})} /></div>)}
+                             </div>
+                           ) : (
+                             <div className="grid grid-cols-2 gap-4">
+                                <div><label className="text-xs font-bold text-[#4fb7b3] uppercase">Raio (cm)</label><input type="number" className="w-full bg-black/30 border border-white/10 rounded p-3 text-white mt-1" value={calcDims.radius || ''} onChange={e => setCalcDims({...calcDims, radius: parseFloat(e.target.value)})} /></div>
+                                <div><label className="text-xs font-bold text-[#4fb7b3] uppercase">Altura (cm)</label><input type="number" className="w-full bg-black/30 border border-white/10 rounded p-3 text-white mt-1" value={calcDims.height || ''} onChange={e => setCalcDims({...calcDims, height: parseFloat(e.target.value)})} /></div>
+                             </div>
+                           )}
+
+                           <div className="flex items-center gap-2"><input type="checkbox" id="calcSump" className="w-4 h-4" checked={calcHasSump} onChange={e => setCalcHasSump(e.target.checked)} /><label htmlFor="calcSump" className="text-sm text-white font-bold cursor-pointer">Incluir Sump (Retangular)?</label></div>
                            {calcHasSump && <div className="grid grid-cols-3 gap-4 p-4 bg-white/5 rounded-xl border border-white/5">{['length', 'width', 'height'].map(d => <div key={d}><label className="text-xs font-bold text-[#4fb7b3] uppercase">{d === 'length' ? 'Comp.' : d === 'width' ? 'Larg.' : 'Alt.'}</label><input type="number" className="w-full bg-black/30 border border-white/10 rounded p-2 text-white mt-1 text-sm" value={(calcSumpDims as any)[d] || ''} onChange={e => setCalcSumpDims({...calcSumpDims, [d]: parseFloat(e.target.value)})} /></div>)}</div>}
-                           <div className="mt-8 pt-6 border-t border-white/10 text-center"><p className="text-sm text-slate-400 uppercase tracking-widest mb-2">Total Estimado</p><p className="text-5xl font-bold text-white font-heading">{calculateVolume().total.toFixed(0)} <span className="text-xl text-[#4fb7b3]">Litros</span></p></div>
+                           
+                           <div className="mt-8 pt-6 border-t border-white/10 grid grid-cols-2 gap-8 text-center">
+                              <div><p className="text-sm text-slate-400 uppercase tracking-widest mb-2">Volume Total</p><p className="text-4xl font-bold text-white font-heading">{calculateVolume().total.toFixed(0)} <span className="text-lg text-[#4fb7b3]">Litros</span></p></div>
+                              <div><p className="text-sm text-slate-400 uppercase tracking-widest mb-2">Peso Aprox. (Água)</p><p className="text-4xl font-bold text-white font-heading">{calculateVolume().weight.toFixed(0)} <span className="text-lg text-[#4fb7b3]">kg</span></p></div>
+                           </div>
                         </div>
                      </div>
                    )}
+
+                   {/* CALCULADORA DE SUBSTRATO */}
+                   {activeTool === 'substrate' && (
+                     <div className="bg-[#1a1b3b]/60 border border-white/10 rounded-2xl p-8 max-w-2xl mx-auto">
+                        <h3 className="text-xl font-heading font-bold text-white mb-6 flex items-center gap-2"><Layers size={24} className="text-[#4fb7b3]" /> Calculadora de Substrato</h3>
+                        <div className="space-y-6">
+                           <div className="grid grid-cols-3 gap-4">
+                              <div><label className="text-xs font-bold text-[#4fb7b3] uppercase">Comp. Tanque (cm)</label><input type="number" className="w-full bg-black/30 border border-white/10 rounded p-3 text-white mt-1" value={subDims.length} onChange={e => setSubDims({...subDims, length: parseFloat(e.target.value)})} /></div>
+                              <div><label className="text-xs font-bold text-[#4fb7b3] uppercase">Larg. Tanque (cm)</label><input type="number" className="w-full bg-black/30 border border-white/10 rounded p-3 text-white mt-1" value={subDims.width} onChange={e => setSubDims({...subDims, width: parseFloat(e.target.value)})} /></div>
+                              <div><label className="text-xs font-bold text-[#4fb7b3] uppercase">Altura Camada (cm)</label><input type="number" className="w-full bg-black/30 border border-white/10 rounded p-3 text-white mt-1" value={subDims.depth} onChange={e => setSubDims({...subDims, depth: parseFloat(e.target.value)})} /></div>
+                           </div>
+                           <div>
+                              <label className="text-xs font-bold text-[#4fb7b3] uppercase">Tipo de Material</label>
+                              <select className="w-full bg-black/30 border border-white/10 rounded p-3 text-white mt-1" value={subType} onChange={e => setSubType(e.target.value as any)}>
+                                <option value="sand">Areia (Fina/Média)</option>
+                                <option value="gravel">Cascalho / Pedrisco</option>
+                                <option value="soil">Solo Fértil / Amazônia</option>
+                              </select>
+                           </div>
+                           <div className="mt-8 pt-6 border-t border-white/10 text-center">
+                              <p className="text-sm text-slate-400 uppercase tracking-widest mb-2">Quantidade Necessária</p>
+                              <p className="text-5xl font-bold text-white font-heading">{calculateSubstrate()} <span className="text-xl text-[#4fb7b3]">kg</span></p>
+                              <p className="text-xs text-slate-500 mt-2">Estimativa baseada na densidade média do material.</p>
+                           </div>
+                        </div>
+                     </div>
+                   )}
+
+                   {/* CALCULADORA CO2 */}
+                   {activeTool === 'co2' && (
+                     <div className="bg-[#1a1b3b]/60 border border-white/10 rounded-2xl p-8 max-w-2xl mx-auto">
+                        <h3 className="text-xl font-heading font-bold text-white mb-6 flex items-center gap-2"><Wind size={24} className="text-[#4fb7b3]" /> Nível de CO2 (pH x KH)</h3>
+                        <div className="space-y-6">
+                           <div className="grid grid-cols-2 gap-6">
+                              <div><label className="text-xs font-bold text-[#4fb7b3] uppercase">pH da Água</label><input type="number" step="0.1" className="w-full bg-black/30 border border-white/10 rounded p-3 text-white mt-1" value={co2Params.ph} onChange={e => setCo2Params({...co2Params, ph: parseFloat(e.target.value)})} /></div>
+                              <div><label className="text-xs font-bold text-[#4fb7b3] uppercase">Reserva Alcalina (KH)</label><input type="number" className="w-full bg-black/30 border border-white/10 rounded p-3 text-white mt-1" value={co2Params.kh} onChange={e => setCo2Params({...co2Params, kh: parseFloat(e.target.value)})} /></div>
+                           </div>
+                           <div className="mt-8 pt-6 border-t border-white/10 text-center">
+                              <p className="text-sm text-slate-400 uppercase tracking-widest mb-2">Concentração Estimada</p>
+                              <p className={`text-5xl font-bold font-heading ${calculateCO2().color}`}>{calculateCO2().val} <span className="text-xl">ppm</span></p>
+                              <p className={`text-sm font-bold uppercase tracking-widest mt-2 ${calculateCO2().color}`}>{calculateCO2().status}</p>
+                           </div>
+                        </div>
+                     </div>
+                   )}
+
+                   {/* CALCULADORA ENERGIA */}
+                   {activeTool === 'energy' && (
+                     <div className="bg-[#1a1b3b]/60 border border-white/10 rounded-2xl p-8 max-w-2xl mx-auto">
+                        <h3 className="text-xl font-heading font-bold text-white mb-6 flex items-center gap-2"><Zap size={24} className="text-[#4fb7b3]" /> Custo de Energia</h3>
+                        <div className="space-y-6">
+                           <div className="grid grid-cols-3 gap-4">
+                              <div><label className="text-xs font-bold text-[#4fb7b3] uppercase">Potência Total (W)</label><input type="number" className="w-full bg-black/30 border border-white/10 rounded p-3 text-white mt-1" value={energyParams.watts} onChange={e => setEnergyParams({...energyParams, watts: parseFloat(e.target.value)})} /></div>
+                              <div><label className="text-xs font-bold text-[#4fb7b3] uppercase">Horas Ligado/Dia</label><input type="number" className="w-full bg-black/30 border border-white/10 rounded p-3 text-white mt-1" value={energyParams.hours} onChange={e => setEnergyParams({...energyParams, hours: parseFloat(e.target.value)})} /></div>
+                              <div><label className="text-xs font-bold text-[#4fb7b3] uppercase">R$ por kWh</label><input type="number" step="0.01" className="w-full bg-black/30 border border-white/10 rounded p-3 text-white mt-1" value={energyParams.costKwh} onChange={e => setEnergyParams({...energyParams, costKwh: parseFloat(e.target.value)})} /></div>
+                           </div>
+                           <div className="mt-8 pt-6 border-t border-white/10 grid grid-cols-2 gap-8 text-center">
+                              <div><p className="text-sm text-slate-400 uppercase tracking-widest mb-2">Consumo Mensal</p><p className="text-3xl font-bold text-white font-heading">{calculateEnergy().kwh} <span className="text-lg text-[#4fb7b3]">kWh</span></p></div>
+                              <div><p className="text-sm text-slate-400 uppercase tracking-widest mb-2">Custo Mensal</p><p className="text-3xl font-bold text-white font-heading">R$ {calculateEnergy().cost}</p></div>
+                           </div>
+                        </div>
+                     </div>
+                   )}
+
+                   {/* CONVERSOR */}
                    {activeTool === 'conv' && (
                      <div className="bg-[#1a1b3b]/60 border border-white/10 rounded-2xl p-8 max-w-2xl mx-auto">
                         <h3 className="text-xl font-heading font-bold text-white mb-6 flex items-center gap-2"><ArrowRightLeft size={24} className="text-[#4fb7b3]" /> Conversor</h3>
-                        <div className="flex bg-black/30 p-1 rounded-lg mb-6">{['temp', 'vol', 'len'].map(c => <button key={c} onClick={() => setConvCategory(c as any)} className={`flex-1 py-2 text-xs font-bold uppercase rounded ${convCategory === c ? 'bg-[#4fb7b3] text-black' : 'text-slate-400'}`}>{c}</button>)}</div>
-                        <div className="space-y-6"><div><label className="text-xs font-bold text-[#4fb7b3] uppercase">Valor</label><input type="number" className="w-full bg-black/30 border border-white/10 rounded p-4 text-white mt-2 text-xl" value={convValue} onChange={e => setConvValue(e.target.value)} /></div>
+                        <div className="flex bg-black/30 p-1 rounded-lg mb-6 flex-wrap gap-2">
+                          {['temp', 'vol', 'len', 'gh'].map(c => (
+                            <button key={c} onClick={() => setConvCategory(c as any)} className={`flex-1 py-2 px-2 text-xs font-bold uppercase rounded ${convCategory === c ? 'bg-[#4fb7b3] text-black' : 'text-slate-400'}`}>
+                              {c === 'temp' ? 'Temp' : c === 'vol' ? 'Vol' : c === 'len' ? 'Comp' : 'Dureza'}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="space-y-6"><div><label className="text-xs font-bold text-[#4fb7b3] uppercase">Valor de Entrada</label><input type="number" className="w-full bg-black/30 border border-white/10 rounded p-4 text-white mt-2 text-xl" value={convValue} onChange={e => setConvValue(e.target.value)} /></div>
                            <div className="grid grid-cols-2 gap-4 mt-4"><div className="bg-white/5 border border-white/5 rounded-xl p-4 text-center"><p className="text-2xl font-bold text-white">{calculateConversion().val1}</p></div><div className="bg-white/5 border border-white/5 rounded-xl p-4 text-center"><p className="text-2xl font-bold text-white">{calculateConversion().val2}</p></div></div>
                         </div>
                      </div>
                    )}
+
+                   {/* DIAGNÓSTICO */}
                    {activeTool === 'diag' && (
                      <div className="bg-[#1a1b3b]/60 border border-white/10 rounded-2xl p-8 max-w-2xl mx-auto text-center">
                         <Stethoscope size={64} className="text-[#4fb7b3] mx-auto mb-6" /><h3 className="text-2xl font-heading font-bold text-white mb-4">Diagnóstico com IA</h3>
-                        <p className="text-slate-300 mb-8">Use o chat Titan Copilot (canto inferior) para descrever os sintomas.</p>
+                        <p className="text-slate-300 mb-8">Use o chat Titan Copilot (canto inferior) para descrever os sintomas. Ele foi treinado para identificar as principais doenças de peixes e problemas de algas.</p>
                      </div>
                    )}
                 </div>
