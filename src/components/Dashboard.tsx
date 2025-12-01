@@ -103,7 +103,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isMaster, events, onAddEvent, o
     setIsEventFormOpen(true);
   };
 
-  // Simulação de Upload (Base64) para funcionar sem configurar Storage Bucket imediatamente
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -150,7 +149,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isMaster, events, onAddEvent, o
         </div>
       </div>
 
-      {/* --- ABA VISÃO GERAL --- */}
       {activeTab === 'overview' && (
           <div className="grid gap-4 md:grid-cols-3">
             <div className="rounded-2xl border border-white/5 bg-[#1a1b3b]/60 p-6 relative overflow-hidden">
@@ -174,7 +172,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isMaster, events, onAddEvent, o
           </div>
       )}
 
-      {/* --- ABA CLIENTES (MOCKUP VISUAL) --- */}
       {activeTab === 'clients' && (
           <div className="rounded-2xl border border-white/10 bg-[#1a1b3b]/60 overflow-hidden">
               <div className="p-6 border-b border-white/10">
@@ -192,7 +189,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isMaster, events, onAddEvent, o
                           </tr>
                       </thead>
                       <tbody className="divide-y divide-white/5">
-                          {/* Dados Mockados para Exemplo Visual */}
                           <tr className="hover:bg-white/5 transition-colors">
                               <td className="px-6 py-4 font-medium text-white">kbludobarman@gmail.com</td>
                               <td className="px-6 py-4"><span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400">Ativo</span></td>
@@ -200,30 +196,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isMaster, events, onAddEvent, o
                               <td className="px-6 py-4">∞</td>
                               <td className="px-6 py-4">Out 2023</td>
                           </tr>
-                          <tr className="hover:bg-white/5 transition-colors">
-                              <td className="px-6 py-4 font-medium text-white">cliente.exemplo@email.com</td>
-                              <td className="px-6 py-4"><span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400">Ativo</span></td>
-                              <td className="px-6 py-4">Hobby</td>
-                              <td className="px-6 py-4">1</td>
-                              <td className="px-6 py-4">Jan 2024</td>
-                          </tr>
-                          <tr className="hover:bg-white/5 transition-colors">
-                              <td className="px-6 py-4 font-medium text-white">loja.aquarios@business.com</td>
-                              <td className="px-6 py-4"><span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-blue-500/20 text-blue-400">Pro</span></td>
-                              <td className="px-6 py-4">Profissional</td>
-                              <td className="px-6 py-4">15</td>
-                              <td className="px-6 py-4">Fev 2024</td>
-                          </tr>
                       </tbody>
                   </table>
-              </div>
-              <div className="p-4 text-center text-xs text-slate-500 border-t border-white/5">
-                  Exibindo 3 de 142 clientes
               </div>
           </div>
       )}
 
-      {/* --- ABA EVENTOS --- */}
       {activeTab === 'events' && (
         <div className="rounded-2xl border border-white/5 bg-[#1a1b3b]/60 p-6">
             <div className="flex justify-between items-center mb-6">
@@ -254,20 +232,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isMaster, events, onAddEvent, o
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <button 
-                        onClick={() => handleOpenForm(evt)}
-                        className="p-2 bg-white/5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
-                        title="Editar"
-                        >
-                        <Pencil size={16} />
-                        </button>
-                        <button 
-                        onClick={() => onDeleteEvent(evt.id)}
-                        className="p-2 bg-rose-500/10 rounded-lg text-rose-400 hover:bg-rose-500 hover:text-white transition-colors"
-                        title="Excluir"
-                        >
-                        <Trash2 size={16} />
-                        </button>
+                        <button onClick={() => handleOpenForm(evt)} className="p-2 bg-white/5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"><Pencil size={16} /></button>
+                        <button onClick={() => onDeleteEvent(evt.id)} className="p-2 bg-rose-500/10 rounded-lg text-rose-400 hover:bg-rose-500 hover:text-white transition-colors"><Trash2 size={16} /></button>
                     </div>
                 </div>
                 ))}
@@ -276,7 +242,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isMaster, events, onAddEvent, o
         </div>
       )}
 
-      {/* Modal Criar/Editar Evento */}
       <AnimatePresence>
         {isEventFormOpen && (
           <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
@@ -294,22 +259,16 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isMaster, events, onAddEvent, o
                 <form onSubmit={handleSubmit} className="space-y-4">
                    <div>
                      <label className="text-xs font-bold text-[#4fb7b3] uppercase">Título</label>
-                     <input type="text" required className="w-full bg-black/30 border border-white/10 rounded p-2 text-white text-sm mt-1 focus:border-[#4fb7b3] outline-none" 
-                       value={newEvent.title} onChange={e => setNewEvent({...newEvent, title: e.target.value})}
-                     />
+                     <input type="text" required className="w-full bg-black/30 border border-white/10 rounded p-2 text-white text-sm mt-1 focus:border-[#4fb7b3] outline-none" value={newEvent.title} onChange={e => setNewEvent({...newEvent, title: e.target.value})} />
                    </div>
                    <div className="grid grid-cols-2 gap-4">
                      <div>
                         <label className="text-xs font-bold text-[#4fb7b3] uppercase">Data</label>
-                        <input type="text" required placeholder="Ex: 15/08/2026" className="w-full bg-black/30 border border-white/10 rounded p-2 text-white text-sm mt-1 focus:border-[#4fb7b3] outline-none" 
-                          value={newEvent.date} onChange={e => setNewEvent({...newEvent, date: e.target.value})}
-                        />
+                        <input type="text" required placeholder="Ex: 15/08/2026" className="w-full bg-black/30 border border-white/10 rounded p-2 text-white text-sm mt-1 focus:border-[#4fb7b3] outline-none" value={newEvent.date} onChange={e => setNewEvent({...newEvent, date: e.target.value})} />
                      </div>
                      <div>
                         <label className="text-xs font-bold text-[#4fb7b3] uppercase">Tipo</label>
-                        <select className="w-full bg-black/30 border border-white/10 rounded p-2 text-white text-sm mt-1 focus:border-[#4fb7b3] outline-none"
-                          value={newEvent.type} onChange={e => setNewEvent({...newEvent, type: e.target.value as any})}
-                        >
+                        <select className="w-full bg-black/30 border border-white/10 rounded p-2 text-white text-sm mt-1 focus:border-[#4fb7b3] outline-none" value={newEvent.type} onChange={e => setNewEvent({...newEvent, type: e.target.value as any})} >
                           <option value="Feira">Feira</option>
                           <option value="Encontro">Encontro</option>
                           <option value="Campeonato">Campeonato</option>
@@ -319,71 +278,26 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isMaster, events, onAddEvent, o
                    </div>
                    <div>
                      <label className="text-xs font-bold text-[#4fb7b3] uppercase">Local</label>
-                     <input type="text" required placeholder="Cidade - Local" className="w-full bg-black/30 border border-white/10 rounded p-2 text-white text-sm mt-1 focus:border-[#4fb7b3] outline-none" 
-                       value={newEvent.location} onChange={e => setNewEvent({...newEvent, location: e.target.value})}
-                     />
+                     <input type="text" required placeholder="Cidade - Local" className="w-full bg-black/30 border border-white/10 rounded p-2 text-white text-sm mt-1 focus:border-[#4fb7b3] outline-none" value={newEvent.location} onChange={e => setNewEvent({...newEvent, location: e.target.value})} />
                    </div>
-                   
-                   {/* Seção Imagem - Upload e URL */}
                    <div>
-                     <label className="text-xs font-bold text-[#4fb7b3] uppercase flex items-center gap-2">
-                       <ImageIcon size={14} /> Imagem de Capa
-                     </label>
+                     <label className="text-xs font-bold text-[#4fb7b3] uppercase flex items-center gap-2"><ImageIcon size={14} /> Imagem de Capa</label>
                      <div className="flex gap-2 mt-1 mb-2">
                        <label className="flex-1 flex items-center justify-center gap-2 bg-white/5 border border-white/10 hover:border-[#4fb7b3] rounded p-2 cursor-pointer transition-colors">
-                          <Upload size={14} />
-                          <span className="text-xs">Carregar Arquivo</span>
+                          <Upload size={14} /><span className="text-xs">Carregar Arquivo</span>
                           <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
                        </label>
                      </div>
-                     <input type="text" placeholder="Ou cole a URL da imagem aqui" className="w-full bg-black/30 border border-white/10 rounded p-2 text-white text-sm focus:border-[#4fb7b3] outline-none" 
-                       value={newEvent.image || ''} onChange={e => setNewEvent({...newEvent, image: e.target.value})}
-                     />
-                     {newEvent.image && (
-                        <div className="mt-2 relative h-32 w-full rounded-lg overflow-hidden border border-white/10 bg-black/50">
-                            <img 
-                                src={newEvent.image} 
-                                alt="Preview" 
-                                className="h-full w-full object-cover" 
-                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                            />
-                        </div>
-                     )}
-                   </div>
-
-                   {/* Seção Vídeo */}
-                   <div>
-                     <label className="text-xs font-bold text-[#4fb7b3] uppercase flex items-center gap-2">
-                       <Youtube size={14} /> Vídeo (YouTube)
-                     </label>
-                     <input 
-                        type="text" 
-                        placeholder="https://www.youtube.com/watch?v=..." 
-                        className="w-full bg-black/30 border border-white/10 rounded p-2 text-white text-sm mt-1 focus:border-[#4fb7b3] outline-none" 
-                        value={newEvent.video_url || ''} 
-                        onChange={e => setNewEvent({...newEvent, video_url: e.target.value})}
-                    />
-                   </div>
-
-                   <div>
-                     <label className="text-xs font-bold text-[#4fb7b3] uppercase">Link Externo</label>
-                     <input type="text" placeholder="Site do evento" className="w-full bg-black/30 border border-white/10 rounded p-2 text-white text-sm mt-1 focus:border-[#4fb7b3] outline-none" 
-                       value={newEvent.link || ''} onChange={e => setNewEvent({...newEvent, link: e.target.value})}
-                     />
+                     <input type="text" placeholder="Ou cole a URL da imagem aqui" className="w-full bg-black/30 border border-white/10 rounded p-2 text-white text-sm focus:border-[#4fb7b3] outline-none" value={newEvent.image || ''} onChange={e => setNewEvent({...newEvent, image: e.target.value})} />
+                     {newEvent.image && <div className="mt-2 relative h-32 w-full rounded-lg overflow-hidden border border-white/10 bg-black/50"><img src={newEvent.image} alt="Preview" className="h-full w-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} /></div>}
                    </div>
                    <div>
-                     <label className="text-xs font-bold text-[#4fb7b3] uppercase">Descrição</label>
-                     <textarea className="w-full bg-black/30 border border-white/10 rounded p-2 text-white text-sm mt-1 h-20 focus:border-[#4fb7b3] outline-none" 
-                       value={newEvent.description} onChange={e => setNewEvent({...newEvent, description: e.target.value})}
-                     />
+                     <label className="text-xs font-bold text-[#4fb7b3] uppercase flex items-center gap-2"><Youtube size={14} /> Vídeo (YouTube)</label>
+                     <input type="text" placeholder="https://www.youtube.com/watch?v=..." className="w-full bg-black/30 border border-white/10 rounded p-2 text-white text-sm mt-1 focus:border-[#4fb7b3] outline-none" value={newEvent.video_url || ''} onChange={e => setNewEvent({...newEvent, video_url: e.target.value})} />
                    </div>
-                   <button 
-                     type="submit" 
-                     disabled={loading}
-                     className="w-full py-3 bg-[#4fb7b3] text-black font-bold uppercase tracking-widest text-xs hover:bg-white transition-colors mt-4"
-                   >
-                     {loading ? 'Salvando...' : (editingEventId ? 'Atualizar Evento' : 'Cadastrar Evento')}
-                   </button>
+                   <div><label className="text-xs font-bold text-[#4fb7b3] uppercase">Link Externo</label><input type="text" placeholder="Site do evento" className="w-full bg-black/30 border border-white/10 rounded p-2 text-white text-sm mt-1 focus:border-[#4fb7b3] outline-none" value={newEvent.link || ''} onChange={e => setNewEvent({...newEvent, link: e.target.value})} /></div>
+                   <div><label className="text-xs font-bold text-[#4fb7b3] uppercase">Descrição</label><textarea className="w-full bg-black/30 border border-white/10 rounded p-2 text-white text-sm mt-1 h-20 focus:border-[#4fb7b3] outline-none" value={newEvent.description} onChange={e => setNewEvent({...newEvent, description: e.target.value})} /></div>
+                   <button type="submit" disabled={loading} className="w-full py-3 bg-[#4fb7b3] text-black font-bold uppercase tracking-widest text-xs hover:bg-white transition-colors mt-4">{loading ? 'Salvando...' : (editingEventId ? 'Atualizar Evento' : 'Cadastrar Evento')}</button>
                 </form>
              </motion.div>
           </div>
@@ -455,30 +369,16 @@ const Dashboard: React.FC = () => {
     notes: '',
   });
 
-  // --- Check Admin (HARDCODED REFORÇADO) ---
   useEffect(() => {
     const checkAdmin = async () => {
       if (!user) return;
-
       const email = user.email ? user.email.toLowerCase().trim() : '';
-      
-      console.log("Verificando admin para:", email);
-
-      // FORÇA ACESSO ADMIN PARA O DONO
       if (email === 'kbludobarman@gmail.com') {
-        console.log('✅ Acesso Master Concedido via Hardcode');
         setIsAdmin(true);
         setIsMaster(true);
         return;
       }
-
-      // Verificação normal para outros usuários
-      const { data, error } = await supabase
-        .from('admin_users')
-        .select('role, is_master')
-        .eq('user_id', user.id)
-        .single();
-
+      const { data, error } = await supabase.from('admin_users').select('role, is_master').eq('user_id', user.id).single();
       if (!error && data) {
         setIsAdmin(true);
         setIsMaster(!!data.is_master);
@@ -487,7 +387,6 @@ const Dashboard: React.FC = () => {
     checkAdmin();
   }, [user]);
 
-  // Carregar Dados
   useEffect(() => {
     if (user) {
       if (activeView === 'aquariums') fetchAquariums();
@@ -498,23 +397,28 @@ const Dashboard: React.FC = () => {
 
   const fetchAquariums = async () => {
     setIsLoadingAquariums(true);
+    // MAPEAMENTO CORRETO PARA LEITURA:
+    // O banco tem volume_liters, sump_volume_liters, tank_type
+    // A interface usa volume, sump_volume, type
+    // Usamos alias no SQL para transformar
     const { data, error } = await supabase
       .from('aquariums')
-      .select('*')
+      .select('*, volume:volume_liters, sump_volume:sump_volume_liters, type:tank_type')
       .order('created_at', { ascending: false });
-    
-    if (error) console.error('Erro aquariums:', error);
-    else setMyAquariums(data || []);
+      
+    if (error) {
+      console.error('Erro aquariums:', error);
+      // alert('Erro ao carregar aquários: ' + error.message);
+    }
+    else {
+      setMyAquariums(data || []);
+    }
     setIsLoadingAquariums(false);
   };
 
   const fetchEvents = async () => {
     setIsLoadingEvents(true);
-    const { data, error } = await supabase
-      .from('events')
-      .select('*')
-      .order('created_at', { ascending: false });
-
+    const { data, error } = await supabase.from('events').select('*').order('created_at', { ascending: false });
     if (!error) setEvents(data || []);
     setIsLoadingEvents(false);
   };
@@ -524,7 +428,6 @@ const Dashboard: React.FC = () => {
       setEditingAquarium(aquarium);
       const tankHasSump = !!(aquarium.sump_volume && aquarium.sump_volume > 0);
       setHasSump(tankHasSump);
-      
       setAquariumFormData({
         name: aquarium.name,
         volume: aquarium.volume,
@@ -546,64 +449,62 @@ const Dashboard: React.FC = () => {
     e.preventDefault();
     if (!user) return;
 
-    if (!aquariumFormData.name) {
-        alert('O nome do aquário é obrigatório.');
-        return;
-    }
-    
-    // Tratamento de Números e Datas
-    const volStr = String(aquariumFormData.volume || '').replace(',', '.');
-    const sumpStr = String(aquariumFormData.sump_volume || '').replace(',', '.');
-    
-    const volume = parseFloat(volStr);
-    const sump_volume = hasSump ? parseFloat(sumpStr) : 0;
-
-    if (isNaN(volume) || volume <= 0) {
-        alert('Volume inválido. Insira um número maior que zero.');
-        return;
-    }
-
-    // CORREÇÃO CRÍTICA: Se a data estiver vazia, envie NULL, senão o Postgres recusa string vazia para coluna DATE
-    const setup_date = aquariumFormData.setup_date ? aquariumFormData.setup_date : null;
-
-    const payload = {
-      name: aquariumFormData.name,
-      volume,
-      sump_volume: isNaN(sump_volume) ? 0 : sump_volume,
-      type: aquariumFormData.type,
-      setup_date, 
-      fauna: aquariumFormData.fauna,
-      equipment: aquariumFormData.equipment,
-      user_id: user.id
-    };
-
-    console.log('Enviando payload:', payload);
-
     try {
+        if (!aquariumFormData.name) {
+            throw new Error('O nome do aquário é obrigatório.');
+        }
+        
+        const volStr = String(aquariumFormData.volume || '').replace(',', '.').trim();
+        const sumpStr = String(aquariumFormData.sump_volume || '').replace(',', '.').trim();
+        
+        const volume = parseFloat(volStr);
+        const sump_volume = hasSump ? parseFloat(sumpStr) : 0;
+
+        if (isNaN(volume) || volume <= 0) {
+            throw new Error('Volume inválido. Insira um número maior que zero.');
+        }
+
+        // Data null se vazia para evitar erro de formato
+        const setup_date = aquariumFormData.setup_date && aquariumFormData.setup_date.trim() !== '' 
+            ? aquariumFormData.setup_date 
+            : null;
+
+        // MAPEAMENTO PARA ESCRITA (Payload):
+        // As chaves devem ser EXATAMENTE como no banco de dados.
+        // Baseado nos seus prints: volume_liters, sump_volume_liters, tank_type
+        const payload = {
+          name: aquariumFormData.name,
+          volume_liters: volume, 
+          sump_volume_liters: isNaN(sump_volume) ? 0 : sump_volume,
+          tank_type: aquariumFormData.type, 
+          setup_date, 
+          fauna: aquariumFormData.fauna,
+          equipment: aquariumFormData.equipment,
+          user_id: user.id
+        };
+
+        console.log('Enviando Payload:', payload);
+
         let error;
         if (editingAquarium) {
-          const { error: updateError } = await supabase
-            .from('aquariums')
-            .update(payload)
-            .eq('id', editingAquarium.id);
+          const { error: updateError } = await supabase.from('aquariums').update(payload).eq('id', editingAquarium.id);
           error = updateError;
         } else {
-          const { error: insertError } = await supabase
-            .from('aquariums')
-            .insert([payload]);
+          const { error: insertError } = await supabase.from('aquariums').insert([payload]);
           error = insertError;
         }
 
         if (error) {
             console.error('Supabase Error:', error);
-            alert(`Erro ao salvar: ${error.message} (Código: ${error.code}). \n\nDica: Verifique se a tabela 'aquariums' existe e se a data está no formato correto.`);
+            // Mensagem de erro amigável mas técnica para debug
+            throw new Error(`Erro do Banco: ${error.message} (Código: ${error.code}). Detalhes: ${error.details || 'Verifique colunas e tipos'}`);
         } else {
             alert(editingAquarium ? 'Aquário atualizado com sucesso!' : 'Aquário cadastrado com sucesso!');
             setIsAquariumFormOpen(false);
             fetchAquariums();
         }
     } catch (err: any) {
-        alert('Erro inesperado: ' + err.message);
+        alert('Falha ao salvar: ' + err.message);
     }
   };
 
@@ -736,7 +637,7 @@ const Dashboard: React.FC = () => {
     <div className="min-h-screen bg-[#05051a] text-white font-sans selection:bg-[#4fb7b3] selection:text-black overflow-hidden flex">
       {/* Sidebar Desktop */}
       <aside className="hidden md:flex w-[280px] flex-col bg-[#05051a] border-r border-white/5 shadow-[0_0_40px_rgba(0,0,0,0.6)] h-screen fixed left-0 top-0 z-20">
-        <div className="p-8 pb-4"><div className="flex items-center gap-3 text-xl font-heading font-bold tracking-tighter text-white"><span className="text-[#4fb7b3]">●</span> TITAN COMMANDER</div></div>
+        <div className="p-8 pb-4"><div className="flex items-center gap-3 text-xl font-heading font-bold tracking-tighter text-white"><span className="text-[#4fb7b3]">●</span> TITAN SYSTEM v2.0</div></div>
         <nav className="flex-1 flex flex-col py-4 overflow-y-auto custom-scrollbar">{renderNavItems()}</nav>
       </aside>
 
@@ -746,7 +647,7 @@ const Dashboard: React.FC = () => {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex md:hidden">
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsSidebarOpen(false)} />
             <motion.aside initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }} transition={{ type: 'spring', stiffness: 260, damping: 30 }} className="relative z-50 flex h-full w-[280px] flex-col bg-[#05051a] border-r border-white/10">
-              <div className="p-8 pb-4"><div className="flex items-center gap-3 text-xl font-heading font-bold tracking-tighter text-white"><span className="text-[#4fb7b3]">●</span> TITAN COMMANDER</div></div>
+              <div className="p-8 pb-4"><div className="flex items-center gap-3 text-xl font-heading font-bold tracking-tighter text-white"><span className="text-[#4fb7b3]">●</span> TITAN SYSTEM v2.0</div></div>
               <nav className="flex-1 flex flex-col py-4 overflow-y-auto">{renderNavItems()}</nav>
             </motion.aside>
           </motion.div>
@@ -916,28 +817,40 @@ const Dashboard: React.FC = () => {
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-[#1a1b3b] border border-white/10 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl custom-scrollbar">
               <div className="sticky top-0 bg-[#1a1b3b] p-6 border-b border-white/10 flex justify-between items-center z-10"><h2 className="text-xl font-heading font-bold text-white">{editingAquarium ? 'Editar Aquário' : 'Novo Aquário'}</h2><button onClick={() => setIsAquariumFormOpen(false)}><X size={20} className="text-slate-400 hover:text-white" /></button></div>
               <form onSubmit={handleSaveAquarium} className="p-6 space-y-6">
-                <div className="space-y-2"><label className="text-xs font-bold text-[#4fb7b3] uppercase">Nome</label><input type="text" value={aquariumFormData.name} onChange={e => setAquariumFormData({...aquariumFormData, name: e.target.value})} className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-[#4fb7b3] outline-none" required /></div>
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2"><label className="text-xs font-bold text-[#4fb7b3] uppercase">Tipo</label><select value={aquariumFormData.type} onChange={e => setAquariumFormData({...aquariumFormData, type: e.target.value})} className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-[#4fb7b3] outline-none"><option value="Doce">Água Doce</option><option value="Marinho">Marinho</option><option value="Reef">Reef</option></select></div>
-                    <div className="space-y-2"><label className="text-xs font-bold text-[#4fb7b3] uppercase">Volume (L)</label><input type="number" value={aquariumFormData.volume || ''} onChange={e => setAquariumFormData({...aquariumFormData, volume: parseFloat(e.target.value) || undefined})} className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-[#4fb7b3] outline-none" /></div>
-                </div>
-                <div className="space-y-2"><div className="flex items-center gap-2"><input type="checkbox" checked={hasSump} onChange={e => { setHasSump(e.target.checked); if(!e.target.checked) setAquariumFormData({...aquariumFormData, sump_volume: 0}); }} /><label className="text-xs font-bold text-[#4fb7b3] uppercase cursor-pointer">Sump?</label></div><input type="number" disabled={!hasSump} placeholder="Volume Sump" className={`w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-[#4fb7b3] outline-none ${!hasSump && 'opacity-50'}`} value={hasSump ? (aquariumFormData.sump_volume || '') : ''} onChange={e => setAquariumFormData({...aquariumFormData, sump_volume: parseFloat(e.target.value) || 0})} /></div>
+                <div className="space-y-2"><label className="text-xs font-bold text-[#4fb7b3] uppercase tracking-widest">Nome</label><input type="text" value={aquariumFormData.name} onChange={e => setAquariumFormData({...aquariumFormData, name: e.target.value})} className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-[#4fb7b3] outline-none transition-colors" placeholder="Ex: Principal da Sala" required /></div>
                 
-                {/* Data de Montagem */}
+                <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2"><label className="text-xs font-bold text-[#4fb7b3] uppercase tracking-widest">Tipo</label><select value={aquariumFormData.type} onChange={e => setAquariumFormData({...aquariumFormData, type: e.target.value})} className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-[#4fb7b3] outline-none transition-colors"><option value="Doce">Água Doce</option><option value="Marinho">Marinho</option><option value="Reef">Reef</option><option value="Jumbo">Jumbo / Predadores</option><option value="Plantado">Plantado</option></select></div>
+                    <div className="space-y-2"><label className="text-xs font-bold text-[#4fb7b3] uppercase tracking-widest">Volume (L)</label><input type="number" value={aquariumFormData.volume || ''} onChange={e => setAquariumFormData({...aquariumFormData, volume: parseFloat(e.target.value) || undefined})} className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-[#4fb7b3] outline-none transition-colors" placeholder="0" /></div>
+                </div>
+
+                <div className="p-4 rounded-xl border border-white/5 bg-white/5">
+                    <div className="flex items-center gap-2 mb-3">
+                        <input type="checkbox" id="checkSump" checked={hasSump} onChange={e => { setHasSump(e.target.checked); if(!e.target.checked) setAquariumFormData({...aquariumFormData, sump_volume: 0}); }} className="w-4 h-4 rounded border-gray-600 text-[#4fb7b3] focus:ring-[#4fb7b3]" />
+                        <label htmlFor="checkSump" className="text-xs font-bold text-[#4fb7b3] uppercase cursor-pointer">Possui Sump?</label>
+                    </div>
+                    {hasSump && (
+                        <div className="space-y-2">
+                            <label className="text-xs text-slate-400 uppercase">Volume do Sump (L)</label>
+                            <input type="number" placeholder="Volume Sump" className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-[#4fb7b3] outline-none transition-colors" value={aquariumFormData.sump_volume || ''} onChange={e => setAquariumFormData({...aquariumFormData, sump_volume: parseFloat(e.target.value) || 0})} />
+                        </div>
+                    )}
+                </div>
+                
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-[#4fb7b3] uppercase">Data de Montagem</label>
+                  <label className="text-xs font-bold text-[#4fb7b3] uppercase tracking-widest">Data de Montagem</label>
                   <input 
                     type="date" 
                     value={aquariumFormData.setup_date || ''} 
                     onChange={e => setAquariumFormData({...aquariumFormData, setup_date: e.target.value})} 
-                    className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-[#4fb7b3] outline-none" 
+                    className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-[#4fb7b3] outline-none transition-colors" 
                   />
                 </div>
 
-                <div className="space-y-2"><label className="text-xs font-bold text-[#4fb7b3] uppercase">Fauna</label><textarea value={aquariumFormData.fauna || ''} onChange={e => setAquariumFormData({...aquariumFormData, fauna: e.target.value})} className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white h-20" /></div>
-                <div className="space-y-2"><label className="text-xs font-bold text-[#4fb7b3] uppercase">Equipamentos</label><textarea value={aquariumFormData.equipment || ''} onChange={e => setAquariumFormData({...aquariumFormData, equipment: e.target.value})} className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white h-20" /></div>
+                <div className="space-y-2"><label className="text-xs font-bold text-[#4fb7b3] uppercase tracking-widest">Fauna Principal</label><textarea value={aquariumFormData.fauna || ''} onChange={e => setAquariumFormData({...aquariumFormData, fauna: e.target.value})} className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white h-24 focus:border-[#4fb7b3] outline-none transition-colors" placeholder="Ex: 2 Oscars, 1 Cascudo..." /></div>
+                <div className="space-y-2"><label className="text-xs font-bold text-[#4fb7b3] uppercase tracking-widest">Equipamentos</label><textarea value={aquariumFormData.equipment || ''} onChange={e => setAquariumFormData({...aquariumFormData, equipment: e.target.value})} className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white h-24 focus:border-[#4fb7b3] outline-none transition-colors" placeholder="Ex: Canister 2000L/h, Termostato 300W..." /></div>
                 
-                <div className="flex gap-4 pt-4 border-t border-white/10"><button type="button" onClick={() => setIsAquariumFormOpen(false)} className="flex-1 py-3 border border-white/10 rounded-lg text-slate-300 font-bold uppercase">Cancelar</button><button type="submit" className="flex-1 py-3 bg-[#4fb7b3] rounded-lg text-black font-bold uppercase">Salvar</button></div>
+                <div className="flex gap-4 pt-6 border-t border-white/10"><button type="button" onClick={() => setIsAquariumFormOpen(false)} className="flex-1 py-4 border border-white/10 rounded-lg text-slate-300 font-bold uppercase hover:bg-white/5 transition-colors">Cancelar</button><button type="submit" className="flex-1 py-4 bg-[#4fb7b3] rounded-lg text-black font-bold uppercase hover:bg-white transition-colors shadow-lg shadow-[#4fb7b3]/20">Salvar Aquário</button></div>
               </form>
             </motion.div>
           </div>
