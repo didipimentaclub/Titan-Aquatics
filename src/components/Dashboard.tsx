@@ -47,6 +47,7 @@ import { jsPDF } from 'jspdf';
 
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabaseClient';
+import { getEmbedUrl } from '../utils/videoHelpers';
 import { Aquarium, AquariumEvent } from '../types';
 
 // --- Interfaces Auxiliares ---
@@ -637,21 +638,6 @@ const Dashboard: React.FC = () => {
     else fetchEvents();
   };
   
-  const getEmbedUrl = (url?: string) => {
-    if (!url) return null;
-    if (url.includes('<iframe')) {
-      const srcMatch = url.match(/src="([^"]+)"/);
-      return srcMatch ? srcMatch[1] : null;
-    }
-    if (url.includes('youtube.com') || url.includes('youtu.be')) {
-       let videoId = '';
-       if (url.includes('v=')) videoId = url.split('v=')[1].split('&')[0];
-       else if (url.includes('youtu.be/')) videoId = url.split('youtu.be/')[1];
-       return `https://www.youtube.com/embed/${videoId}`;
-    }
-    return url;
-  };
-
   const generateTravelGuide = () => {
     const doc = new jsPDF();
     doc.text('Guia do Cuidador - TitanAquatics', 20, 20);
